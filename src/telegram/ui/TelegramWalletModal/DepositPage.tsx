@@ -61,7 +61,7 @@ export const DepositPage: FC<{ setFlow: (flow: ITelegramWalletFlow) => void }> =
       </div>
       <span css={[tw`text-white/50 text-center font-bold`, styles.text[theme]]}>Your Solana Address</span>
       <div css={[tw`p-4 flex flex-col gap-2 items-center justify-center rounded-lg`, styles.container[theme]]}>
-        <p css={[tw`text-white/50 text-center text-wrap break-words max-w-xs`, styles.text[theme]]}>
+        <p css={[tw`text-white/50 text-center flex-wrap break-words max-w-xs`, styles.text[theme]]}>
           {publicKey?.toBase58() || 'Wallet Address Not Found.'}
         </p>
         {publicKey && <CopyButton text={publicKey.toBase58()} />}
