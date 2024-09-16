@@ -1,5 +1,4 @@
 import { retrieveLaunchParams } from '@telegram-apps/sdk-react';
-import { LoginButton, TelegramAuthData } from '@telegram-auth/react';
 import React, { useEffect, useRef, useState } from 'react';
 import { createPublicKey, sendEmailOTP, verifyAndGetPublicKey, verifyEmailOTP } from 'src/telegram/backend';
 import tw from 'twin.macro';
@@ -37,11 +36,9 @@ export const TelegramOnboardingIntro: React.FC<{
   setFlow: (flow: ITelegramOnboardingFlow) => void;
 }> = ({ flow, setFlow, botUsername }) => {
   const { theme, telegramConfig } = useUnifiedWalletContext();
-  const { connect } = useUnifiedWallet();
   const { t } = useTranslation();
 
   const [loading, setLoading] = useState(false);
-  const [authData, setAuthData] = useState<TelegramAuthData>();
   const [isUserLoggedInToTelegram, setIsUserLoggedInToTelegram] = useState(false);
   useEffect(() => {
     if (telegramConfig) {
@@ -67,33 +64,28 @@ export const TelegramOnboardingIntro: React.FC<{
 
       <div tw="mt-6 w-full justify-center flex">
         {!isUserLoggedInToTelegram ? (
-          <LoginButton
-            botUsername={botUsername}
-            onAuthCallback={(data) => {
-              setAuthData(data);
-              setIsUserLoggedInToTelegram(true);
-            }}
-            buttonSize="large" // "large" | "medium" | "small"
-            cornerRadius={5} // 0 - 20
-            showAvatar={true} // true | false
-            lang="en"
-          />
+          <div css={[tw` font-semibold border px-4 py-2 rounded`, styles.button[theme]]}>
+            <a href={telegramConfig?.botDirectLink} target="_blank" rel="noopener noreferrer">
+              <span>{t(`Log In With Telegram`)}</span>
+            </a>
+          </div>
         ) : (
           <button
             type="button"
             disabled={loading}
             css={[
-              tw`text-white font-semibold text-base w-full rounded-lg border border-white/10 py-5 leading-none`,
+              tw`text-white font-semibold text-base w-full rounded-lg border border-white/10 py-5 flex items-center justify-center leading-none`,
               styles.button[theme],
             ]}
             onClick={async () => {
-              if (!telegramConfig) return;
+              const { initDataRaw } = retrieveLaunchParams();
+              if (!telegramConfig || !initDataRaw) return;
               try {
                 setLoading(true);
-                await createPublicKey(telegramConfig.backendEndpoint, JSON.stringify(authData));
+                await createPublicKey(telegramConfig.backendEndpoint, initDataRaw);
               } catch (e) {
                 console.log('Already created');
-                await verifyAndGetPublicKey(telegramConfig.backendEndpoint, JSON.stringify(authData));
+                await verifyAndGetPublicKey(telegramConfig.backendEndpoint, initDataRaw);
               } finally {
                 setLoading(false);
                 setFlow('Add Email');
@@ -132,7 +124,7 @@ export const TelegramEmailInput: React.FC<{
           setError('User not found. Please log in to telegram and try again.');
         }
       }}
-      tw="flex flex-col gap-4 justify-center py-3 px-10"
+      tw="flex flex-col gap-4 justify-center "
     >
       <span tw="text-base font-semibold">
         {t(`Successfully created your wallet. Add an email to recover your wallet in case of emergencies. (Optional)`)}
@@ -259,7 +251,7 @@ export const TelegramEmailVerification: React.FC<{
     }
   };
   return (
-    <form onSubmit={handleSubmit} tw="flex flex-col gap-8 justify-center py-3 px-10">
+    <form onSubmit={handleSubmit} tw="flex flex-col gap-8 justify-center">
       <span tw="text-base font-semibold">{t(`Please enter the One Time Password (OTP) sent to your email.`)}</span>
       <div tw="w-full space-y-2">
         <div tw="flex items-center gap-x-4">
