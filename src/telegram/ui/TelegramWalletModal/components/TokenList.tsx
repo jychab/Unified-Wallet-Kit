@@ -112,7 +112,6 @@ const TokenCard: FC<{
       <span css={styles.text[theme]} tw="text-base font-bold">
         {showPrices ? price : ''}
       </span>
-      å
     </button>
   );
 };

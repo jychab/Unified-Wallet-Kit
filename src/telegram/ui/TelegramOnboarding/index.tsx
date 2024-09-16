@@ -1,6 +1,6 @@
 import { retrieveLaunchParams } from '@telegram-apps/sdk-react';
 import React, { useEffect, useRef, useState } from 'react';
-import { createPublicKey, sendEmailOTP, verifyAndGetPublicKey, verifyEmailOTP } from 'src/telegram/backend';
+import { createPublicKey, sendEmailOTP, verifyEmailOTP } from 'src/telegram/backend';
 import tw from 'twin.macro';
 import { useTranslation } from '../../../contexts/TranslationProvider';
 import { IStandardStyle, useUnifiedWallet, useUnifiedWalletContext } from '../../../contexts/UnifiedWalletContext';
@@ -83,7 +83,7 @@ export const TelegramOnboardingIntro: React.FC<{
                 setLoading(true);
                 await createPublicKey(telegramConfig.backendEndpoint, initDataRaw);
               } catch (e) {
-                await verifyAndGetPublicKey(telegramConfig.backendEndpoint, initDataRaw);
+                console.log(e);
               } finally {
                 setLoading(false);
                 setFlow('Add Email');
@@ -124,7 +124,7 @@ export const TelegramEmailInput: React.FC<{
       }}
       tw="flex flex-col gap-4 justify-center p-4"
     >
-      <span tw="text-base font-semibold">
+      <span tw="text-base text-center font-semibold">
         {t(`Successfully created your wallet. Add an email to recover your wallet in case of emergencies.`)}
       </span>
       <div tw="mt-4 w-full space-y-2">
