@@ -15,8 +15,8 @@ import { TelegramWallet, TelegramWalletImpl } from './wallet';
 
 // Factory function to create a wallet object
 export function getOrCreateTelegramWallet(config: TelegramConfig): TelegramWallet {
-  const cachedWallet = localStorage.getItem('telegramWallet')
-    ? JSON.parse(localStorage.getItem('telegramWallet')!)
+  const cachedWallet = localStorage.getItem(config.botUsername)
+    ? JSON.parse(localStorage.getItem(config.botUsername)!)
     : null;
   if (cachedWallet) {
     // Use saved public key to initialize wallet (this will depend on your wallet implementation)
@@ -26,8 +26,10 @@ export function getOrCreateTelegramWallet(config: TelegramConfig): TelegramWalle
 }
 // Utility function to save wallet state to local storage
 
-export function saveWalletState(wallet: TelegramWallet | null) {
-  wallet ? localStorage.setItem('telegramWallet', JSON.stringify(wallet)) : localStorage.removeItem('telegramWallet');
+export function saveWalletState(config: TelegramConfig, wallet: TelegramWallet | null) {
+  wallet
+    ? localStorage.setItem(config.botUsername, JSON.stringify(wallet))
+    : localStorage.removeItem(config.botUsername);
 }
 
 export async function sendTransactionToBlockchain<T extends Transaction | VersionedTransaction>(

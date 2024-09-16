@@ -126,7 +126,7 @@ export const TelegramOnboardingCompletion: React.FC<{
         <button
           type="button"
           css={[
-            tw`text-white font-semibold text-base w-full rounded-lg border border-white/10 py-5 flex items-center justify-center leading-none`,
+            tw`text-white font-semibold text-base w-full rounded-lg border border-white/10 py-5 px-4 flex items-center justify-center leading-none`,
             styles.button[theme],
           ]}
           onClick={btnOnClick}
@@ -177,7 +177,7 @@ export const TelegramOnboardingFlow = ({
             title={'Wallet Successfully Created'}
             subtitle={`You are all set!`}
             btnText={`Explore @${botUsername}`}
-            image={'https://buckets.blinksfeed.com/success.gif'}
+            image="https://buckets.blinksfeed.com/success.gif"
             btnOnClick={(e) => {
               if (telegramConfig) {
                 handleConnectClick(e, new TelegramWalletAdapter(telegramConfig));
@@ -191,7 +191,7 @@ export const TelegramOnboardingFlow = ({
             title={`Wallet Already Created`}
             subtitle={'You are all set!'}
             btnText={`Explore @${botUsername}`}
-            image={'https://buckets.blinksfeed.com/success.gif'}
+            image="https://buckets.blinksfeed.com/success.gif"
             btnOnClick={(e) => {
               if (telegramConfig) {
                 handleConnectClick(e, new TelegramWalletAdapter(telegramConfig));
@@ -205,7 +205,7 @@ export const TelegramOnboardingFlow = ({
             title={'An error occurred while attempting to create your wallet.'}
             subtitle={`Contact @${botUsername}`}
             btnText={'Try Again'}
-            image={'https://buckets.blinksfeed.com/error.png'}
+            image="https://buckets.blinksfeed.com/error.png"
             btnOnClick={() => setFlow('Onboarding')}
           />
         ) : null}

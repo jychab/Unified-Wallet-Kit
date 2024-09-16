@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import 'twin.macro';
 
-import { WalletName } from '@solana/wallet-adapter-base';
 export const MWA_NOT_FOUND_ERROR = 'MWA_NOT_FOUND_ERROR';
 
 import { Cluster } from '@solana/web3.js';
@@ -27,7 +26,7 @@ const ExampleAllWallets: React.FC<{ theme: IUnifiedTheme; lang: AllLanguage }> =
       iconUrls: ['https://jup.ag/favicon.ico'],
     },
     notificationCallback: WalletNotification,
-    walletPrecedence: ['TelegramWallet' as WalletName],
+    walletPrecedence: [],
     hardcodedWallets: HARDCODED_WALLET_STANDARDS,
     walletlistExplanation: {
       href: 'https://station.jup.ag/docs/additional-topics/wallet-list',

@@ -17,7 +17,7 @@ export const TelegramWalletButton: React.FC<{
   overrideContent?: ReactNode;
   buttonClassName?: string;
   currentUserClassName?: string;
-}> = ({ overrideContent, buttonClassName: className, currentUserClassName }) => {
+}> = ({ overrideContent, buttonClassName: className }) => {
   const { setShowWalletModal, theme, telegramConfig } = useUnifiedWalletContext();
   const { wallet, publicKey } = useUnifiedWallet();
   const [userName, setUsername] = useState('');
@@ -32,9 +32,7 @@ export const TelegramWalletButton: React.FC<{
     }
   }, [telegramConfig, publicKey]);
   const handleClick = useCallback(async () => {
-    // if (wallet?.adapter.name == 'TelegramWallet' && publicKey && telegramConfig) {
     setShowWalletModal(true);
-    // }
   }, [wallet]);
 
   return overrideContent ? (

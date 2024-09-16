@@ -28,12 +28,10 @@ import { TelegramConfig } from 'src/contexts/WalletConnectionProvider';
 import { getOrCreateTelegramWallet, saveWalletState } from './helpers';
 import { TelegramWallet } from './wallet';
 
-export const TelegramWalletName = 'TelegramWallet' as WalletName<'TelegramWallet'>;
-
 export class TelegramWalletAdapter extends BaseMessageSignerWalletAdapter {
-  name = TelegramWalletName;
-  url = ''; // Your app's URL
-  icon = ''; // Your app's icon URL
+  name: WalletName<string>;
+  url: string; // Your app's URL
+  icon: string; // Your app's icon URL
   supportedTransactionVersions: ReadonlySet<TransactionVersion> = new Set(['legacy', 0]);
   readyState: WalletReadyState = WalletReadyState.NotDetected;
 
@@ -50,6 +48,7 @@ export class TelegramWalletAdapter extends BaseMessageSignerWalletAdapter {
     this._config = config;
     this.url = config.botDirectLink;
     this.icon = config.botDisplayPic;
+    this.name = config.botUsername as WalletName;
     if (this.readyState !== WalletReadyState.Unsupported) {
       try {
         retrieveLaunchParams();
@@ -127,7 +126,7 @@ export class TelegramWalletAdapter extends BaseMessageSignerWalletAdapter {
       wallet.off('disconnect', this._disconnected);
       wallet.off('accountChanged', this._accountChanged);
 
-      saveWalletState(null); // Clear the public key from local storage
+      saveWalletState(this._config, null); // Clear the public key from local storage
       this._wallet = null;
       this._publicKey = null;
 
@@ -250,7 +249,7 @@ export class TelegramWalletAdapter extends BaseMessageSignerWalletAdapter {
 
     if (publicKey.equals(newPublicKey)) return;
 
-    saveWalletState(this._wallet);
+    saveWalletState(this._config, this._wallet);
     this._publicKey = newPublicKey;
     this.emit('connect', newPublicKey);
   };
