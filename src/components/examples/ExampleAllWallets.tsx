@@ -36,7 +36,7 @@ const ExampleAllWallets: React.FC<{ theme: IUnifiedTheme; lang: AllLanguage }> =
     lang,
     telegramConfig: {
       rpcEndpoint: 'https://rpc.blinksfeed.com',
-      backendEndpoint: '',
+      backendEndpoint: 'https://us-central1-token-60450.cloudfunctions.net/api',
       botUsername: 'blinksfeedbot',
     },
   };

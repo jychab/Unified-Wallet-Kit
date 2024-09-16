@@ -41,13 +41,15 @@ export const TelegramOnboardingIntro: React.FC<{
   const { t } = useTranslation();
   const [isUserLoggedInToTelegram, setIsUserLoggedInToTelegram] = useState(false);
   useEffect(() => {
-    try {
-      retrieveLaunchParams();
-      setIsUserLoggedInToTelegram(true);
-    } catch (e) {
-      setIsUserLoggedInToTelegram(false);
+    if (telegramConfig) {
+      try {
+        retrieveLaunchParams();
+        setIsUserLoggedInToTelegram(true);
+      } catch (e) {
+        setIsUserLoggedInToTelegram(false);
+      }
     }
-  }, []);
+  }, [telegramConfig]);
 
   return (
     <div tw="flex flex-col justify-center items-center p-10">
