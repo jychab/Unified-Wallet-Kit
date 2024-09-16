@@ -1,11 +1,12 @@
 import { retrieveLaunchParams } from '@telegram-apps/sdk-react';
-import { LoginButton } from '@telegram-auth/react';
+import { LoginButton, TelegramAuthData } from '@telegram-auth/react';
 import React, { useEffect, useRef, useState } from 'react';
-import { createPublicKey, sendEmailOTP, verifyEmailOTP } from 'src/telegram/backend';
+import { createPublicKey, sendEmailOTP, verifyAndGetPublicKey, verifyEmailOTP } from 'src/telegram/backend';
 import tw from 'twin.macro';
 import { useTranslation } from '../../../contexts/TranslationProvider';
 import { IStandardStyle, useUnifiedWallet, useUnifiedWalletContext } from '../../../contexts/UnifiedWalletContext';
 import { Header } from '../TelegramWalletModal/components/Header';
+import SpinnerIcon from '../icons/SpinnerIcon';
 
 const styles: IStandardStyle = {
   subtitle: {
@@ -36,9 +37,11 @@ export const TelegramOnboardingIntro: React.FC<{
   setFlow: (flow: ITelegramOnboardingFlow) => void;
 }> = ({ flow, setFlow, botUsername }) => {
   const { theme, telegramConfig } = useUnifiedWalletContext();
-
   const { connect } = useUnifiedWallet();
   const { t } = useTranslation();
+
+  const [loading, setLoading] = useState(false);
+  const [authData, setAuthData] = useState<TelegramAuthData>();
   const [isUserLoggedInToTelegram, setIsUserLoggedInToTelegram] = useState(false);
   useEffect(() => {
     if (telegramConfig) {
@@ -67,6 +70,7 @@ export const TelegramOnboardingIntro: React.FC<{
           <LoginButton
             botUsername={botUsername}
             onAuthCallback={(data) => {
+              setAuthData(data);
               setIsUserLoggedInToTelegram(true);
             }}
             buttonSize="large" // "large" | "medium" | "small"
@@ -75,26 +79,31 @@ export const TelegramOnboardingIntro: React.FC<{
             lang="en"
           />
         ) : (
-          <button
-            type="button"
-            css={[
-              tw`text-white font-semibold text-base w-full rounded-lg border border-white/10 py-5 leading-none`,
-              styles.button[theme],
-            ]}
-            onClick={() => {
-              const { initDataRaw } = retrieveLaunchParams();
-              if (!telegramConfig || !initDataRaw) return;
-              createPublicKey(telegramConfig.backendEndpoint, initDataRaw)
-                .then(() => {
+          authData &&
+          telegramConfig && (
+            <button
+              type="button"
+              disabled={loading}
+              css={[
+                tw`text-white font-semibold text-base w-full rounded-lg border border-white/10 py-5 leading-none`,
+                styles.button[theme],
+              ]}
+              onClick={async () => {
+                try {
+                  setLoading(true);
+                  await createPublicKey(telegramConfig.backendEndpoint, JSON.stringify(authData));
+                } catch (e) {
+                  console.log('Already created');
+                  await verifyAndGetPublicKey(telegramConfig.backendEndpoint, JSON.stringify(authData));
+                } finally {
+                  setLoading(false);
                   setFlow('Add Email');
-                })
-                .catch((e) => {
-                  connect();
-                });
-            }}
-          >
-            {t(`Create Wallet`)}
-          </button>
+                }
+              }}
+            >
+              {loading ? <SpinnerIcon /> : t(`Create Wallet`)}
+            </button>
+          )
         )}
       </div>
     </div>
