@@ -19,34 +19,6 @@ export async function verifyAndGetPublicKey(endpoint: string, initDataRaw: strin
   return null;
 }
 
-export async function sendEmailOTP(endpoint: string, initDataRaw: string, email: string): Promise<void> {
-  const response = await fetch(endpoint + '/sendEmailOTP', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ verification: `tma ${initDataRaw}`, email }), // Pass the user data to backend
-  });
-  // Check if the response is ok
-  if (!response.ok) {
-    throw Error('Problem sending OTP');
-  }
-}
-
-export async function verifyEmailOTP(endpoint: string, initDataRaw: string, passcode: number): Promise<void> {
-  const response = await fetch(endpoint + '/verifyEmailOTP', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ verification: `tma ${initDataRaw}`, passcode }), // Pass the user data to backend
-  });
-  // Check if the response is ok
-  if (!response.ok) {
-    throw Error('Problem verifying OTP');
-  }
-}
-
 export async function createPublicKey(endpoint: string, initDataRaw: string): Promise<string | null> {
   const response = await fetch(endpoint + '/createPublicKey', {
     method: 'POST',

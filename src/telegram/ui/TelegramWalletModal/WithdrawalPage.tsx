@@ -6,7 +6,6 @@ import { buildAndSendTransaction } from 'src/telegram/helpers';
 import tw from 'twin.macro';
 import { ITelegramWalletFlow } from '.';
 import LeftArrowIcon from '../icons/LeftArrowIcon';
-import SpinnerIcon from '../icons/SpinnerIcon';
 
 const styles: IStandardStyle = {
   container: {
@@ -115,7 +114,7 @@ export const WithdrawalPage: FC<{ token: any; setFlow: (flow: ITelegramWalletFlo
   };
 
   return (
-    <form onSubmit={(e) => {}} tw="flex flex-col items-center justify-center gap-4 pt-4">
+    <form onSubmit={handleSubmit} tw="flex flex-col items-center justify-center gap-4 pt-4">
       <div tw="flex w-full justify-between items-center">
         <button
           type="button"
@@ -206,7 +205,7 @@ export const WithdrawalPage: FC<{ token: any; setFlow: (flow: ITelegramWalletFlo
             styles.walletButton[theme],
           ]}
         >
-          {loading ? <SpinnerIcon /> : 'Confirm'}
+          {loading ? `Submitting` : 'Next'}
         </button>
       </div>
     </form>
