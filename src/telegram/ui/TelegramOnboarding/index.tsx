@@ -79,31 +79,29 @@ export const TelegramOnboardingIntro: React.FC<{
             lang="en"
           />
         ) : (
-          authData &&
-          telegramConfig && (
-            <button
-              type="button"
-              disabled={loading}
-              css={[
-                tw`text-white font-semibold text-base w-full rounded-lg border border-white/10 py-5 leading-none`,
-                styles.button[theme],
-              ]}
-              onClick={async () => {
-                try {
-                  setLoading(true);
-                  await createPublicKey(telegramConfig.backendEndpoint, JSON.stringify(authData));
-                } catch (e) {
-                  console.log('Already created');
-                  await verifyAndGetPublicKey(telegramConfig.backendEndpoint, JSON.stringify(authData));
-                } finally {
-                  setLoading(false);
-                  setFlow('Add Email');
-                }
-              }}
-            >
-              {loading ? <SpinnerIcon /> : t(`Create Wallet`)}
-            </button>
-          )
+          <button
+            type="button"
+            disabled={loading}
+            css={[
+              tw`text-white font-semibold text-base w-full rounded-lg border border-white/10 py-5 leading-none`,
+              styles.button[theme],
+            ]}
+            onClick={async () => {
+              if (!telegramConfig) return;
+              try {
+                setLoading(true);
+                await createPublicKey(telegramConfig.backendEndpoint, JSON.stringify(authData));
+              } catch (e) {
+                console.log('Already created');
+                await verifyAndGetPublicKey(telegramConfig.backendEndpoint, JSON.stringify(authData));
+              } finally {
+                setLoading(false);
+                setFlow('Add Email');
+              }
+            }}
+          >
+            {loading ? <SpinnerIcon /> : t(`Create Wallet`)}
+          </button>
         )}
       </div>
     </div>
