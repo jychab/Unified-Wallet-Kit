@@ -4,20 +4,20 @@ import { useWallet, Wallet, WalletContextState } from '@solana/wallet-adapter-re
 import { PublicKey } from '@solana/web3.js';
 
 import { Adapter, WalletReadyState } from '@solana/wallet-adapter-base';
-import WalletConnectionProvider, { IUnifiedWalletConfig } from './WalletConnectionProvider';
 import { usePrevious } from 'react-use';
+import WalletConnectionProvider, { IUnifiedWalletConfig } from './WalletConnectionProvider';
 
-import { shortenAddress } from '../misc/utils';
+import { TelegramWalletModal } from 'src/telegram/ui/TelegramWalletModal';
 import ModalDialog from '../components/ModalDialog';
 import UnifiedWalletModal from '../components/UnifiedWalletModal';
+import { shortenAddress } from '../misc/utils';
+import { TranslationProvider } from './TranslationProvider';
 import {
-  UnifiedWalletValueContext,
-  UNIFIED_WALLET_VALUE_DEFAULT_CONTEXT,
-  useUnifiedWallet,
   UnifiedWalletContext,
+  UnifiedWalletValueContext,
+  useUnifiedWallet,
   useUnifiedWalletContext,
 } from './UnifiedWalletContext';
-import { TranslationProvider } from './TranslationProvider';
 
 export type IWalletProps = Omit<
   WalletContextState,
@@ -51,7 +51,6 @@ const UnifiedWalletContextProvider: React.FC<
   const { publicKey, wallet, select, connect } = useUnifiedWallet();
   const previousPublicKey = usePrevious<PublicKey | null>(publicKey);
   const previousWallet = usePrevious<Wallet | null>(wallet);
-
   // Weird quirks for autoConnect to require select and connect
   const [nonAutoConnectAttempt, setNonAutoConnectAttempt] = useState(false);
   useEffect(() => {
@@ -66,6 +65,7 @@ const UnifiedWalletContextProvider: React.FC<
   }, [nonAutoConnectAttempt, wallet?.adapter.name]);
 
   const [showModal, setShowModal] = useState(false);
+  const [showWalletModal, setShowWalletModal] = useState(false);
 
   const handleConnectClick = useCallback(
     async (event: React.MouseEvent<HTMLElement, globalThis.MouseEvent>, adapter: Adapter) => {
@@ -155,10 +155,13 @@ const UnifiedWalletContextProvider: React.FC<
   return (
     <UnifiedWalletContext.Provider
       value={{
+        telegramConfig: config.telegramConfig,
         walletPrecedence: config.walletPrecedence || [],
         handleConnectClick,
         showModal,
         setShowModal,
+        showWalletModal,
+        setShowWalletModal,
         walletlistExplanation: config.walletlistExplanation,
         theme: config.theme || 'light',
         walletAttachments: config.walletAttachments || {},
@@ -168,7 +171,9 @@ const UnifiedWalletContextProvider: React.FC<
       <ModalDialog open={showModal} onClose={() => setShowModal(false)}>
         <UnifiedWalletModal onClose={() => setShowModal(false)} />
       </ModalDialog>
-
+      <ModalDialog open={showWalletModal} onClose={() => setShowWalletModal(false)}>
+        <TelegramWalletModal onClose={() => setShowWalletModal(false)} />
+      </ModalDialog>
       {children}
     </UnifiedWalletContext.Provider>
   );
@@ -185,7 +190,7 @@ const UnifiedWalletProvider = ({
 }) => {
   return (
     <TranslationProvider lang={config.lang}>
-      <WalletConnectionProvider wallets={wallets} config={config}>
+      <WalletConnectionProvider config={config} wallets={wallets}>
         <UnifiedWalletValueProvider>
           <UnifiedWalletContextProvider config={config}>{children}</UnifiedWalletContextProvider>
         </UnifiedWalletValueProvider>

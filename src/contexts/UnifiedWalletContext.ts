@@ -1,19 +1,21 @@
 import type { Adapter, SendTransactionOptions, WalletName } from '@solana/wallet-adapter-base';
-import type { Connection, Transaction, VersionedTransaction } from '@solana/web3.js';
 import type { WalletContextState } from '@solana/wallet-adapter-react';
-import { useContext } from 'react';
-import { createContext } from 'react';
-import { IUnifiedWalletConfig } from './WalletConnectionProvider';
+import type { Connection, Transaction, VersionedTransaction } from '@solana/web3.js';
+import { createContext, useContext } from 'react';
 import { TwStyle } from 'twin.macro';
+import { IUnifiedWalletConfig } from './WalletConnectionProvider';
 
 export const MWA_NOT_FOUND_ERROR = 'MWA_NOT_FOUND_ERROR';
 export type IUnifiedTheme = 'light' | 'dark' | 'jupiter';
 export type IStandardStyle = Record<string, { [key in IUnifiedTheme]: TwStyle[] }>;
 
 export interface IUnifiedWalletContext {
+  telegramConfig: IUnifiedWalletConfig['telegramConfig'];
   walletPrecedence: IUnifiedWalletConfig['walletPrecedence'];
   handleConnectClick: (event: React.MouseEvent<HTMLElement, globalThis.MouseEvent>, wallet: Adapter) => Promise<void>;
   showModal: boolean;
+  showWalletModal: boolean;
+  setShowWalletModal: (showWalletModal: boolean) => void;
   setShowModal: (showModal: boolean) => void;
   walletlistExplanation: IUnifiedWalletConfig['walletlistExplanation'];
   theme: IUnifiedTheme;
@@ -22,9 +24,12 @@ export interface IUnifiedWalletContext {
 }
 
 export const UnifiedWalletContext = createContext<IUnifiedWalletContext>({
+  telegramConfig: undefined,
   walletPrecedence: [],
   handleConnectClick: async (event: React.MouseEvent<HTMLElement, globalThis.MouseEvent>, wallet: Adapter) => {},
   showModal: false,
+  showWalletModal: false,
+  setShowWalletModal: (showWalletModal: boolean) => {},
   setShowModal: (showModal: boolean) => {},
   walletlistExplanation: undefined,
   theme: 'light',

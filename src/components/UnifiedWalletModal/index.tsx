@@ -8,6 +8,7 @@ import { WalletIcon, WalletListItem } from './WalletListItem';
 import Collapse from '../../components/Collapse';
 
 import { SolanaMobileWalletAdapterWalletName } from '@solana-mobile/wallet-adapter-mobile';
+import { TelegramWalletAdapter } from 'src/telegram/adapter';
 import { useTranslation } from '../../contexts/TranslationProvider';
 import { IStandardStyle, useUnifiedWallet, useUnifiedWalletContext } from '../../contexts/UnifiedWalletContext';
 import { usePreviouslyConnected } from '../../contexts/WalletConnectionProvider/previouslyConnectedProvider';
@@ -48,7 +49,7 @@ const styles: IStandardStyle = {
     light: [tw`text-black`],
     dark: [tw`text-white`],
     jupiter: [tw`text-white`],
-  }
+  },
 };
 
 const Header: React.FC<{ onClose: () => void }> = ({ onClose }) => {
@@ -82,18 +83,27 @@ const ListOfWallets: React.FC<{
   onToggle: (nextValue?: any) => void;
   isOpen: boolean;
 }> = ({ list, onToggle, isOpen }) => {
-  const { handleConnectClick, walletlistExplanation, walletAttachments, theme } = useUnifiedWalletContext();
+  const { handleConnectClick, walletlistExplanation, walletAttachments, theme, setShowWalletModal, setShowModal } =
+    useUnifiedWalletContext();
   const { t } = useTranslation();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showNotInstalled, setShowNotInstalled] = useState<Adapter | false>(false);
 
-  const onClickWallet = React.useCallback((event: React.MouseEvent<HTMLElement, MouseEvent>, adapter: Adapter) => {
-    if (adapter.readyState === WalletReadyState.NotDetected) {
-      setShowNotInstalled(adapter);
-      return;
-    }
-    handleConnectClick(event, adapter);
-  }, []);
+  const onClickWallet = React.useCallback(
+    async (event: React.MouseEvent<HTMLElement, MouseEvent>, adapter: Adapter) => {
+      if (adapter.readyState === WalletReadyState.NotDetected) {
+        if (adapter.name == 'TelegramWallet') {
+          setShowModal(false);
+          setShowWalletModal(true);
+        } else {
+          setShowNotInstalled(adapter);
+        }
+        return;
+      }
+      handleConnectClick(event, adapter);
+    },
+    [],
+  );
 
   const renderWalletList = useMemo(
     () => (
@@ -239,10 +249,11 @@ export interface WalletModalProps {
   container?: string;
 }
 
-type HIGHLIGHTED_BY = 'PreviouslyConnected' // last connected
-| 'TopAndRecommended' // Installed, and top wallets
-| 'Onboarding'
-| 'TopWallet';
+type HIGHLIGHTED_BY =
+  | 'PreviouslyConnected' // last connected
+  | 'TopAndRecommended' // Installed, and top wallets
+  | 'Onboarding'
+  | 'TopWallet';
 const TOP_WALLETS: WalletName[] = [
   'Phantom' as WalletName<'Phantom'>,
   'Solflare' as WalletName<'Solflare'>,
@@ -274,11 +285,14 @@ const sortByPrecedence = (walletPrecedence: WalletName[]) => (a: Adapter, b: Ada
 
 const UnifiedWalletModal: React.FC<IUnifiedWalletModal> = ({ onClose }) => {
   const { wallets } = useUnifiedWallet();
-  const { walletPrecedence, theme, walletModalAttachments } = useUnifiedWalletContext();
+  const { walletPrecedence, theme, walletModalAttachments, telegramConfig } = useUnifiedWalletContext();
   const [isOpen, onToggle] = useToggle(false);
   const previouslyConnected = usePreviouslyConnected();
 
   const list: { highlightedBy: HIGHLIGHTED_BY; highlight: Adapter[]; others: Adapter[] } = useMemo(() => {
+    if (telegramConfig) {
+      return { highlightedBy: 'TopAndRecommended', highlight: [new TelegramWalletAdapter(telegramConfig)], others: [] };
+    }
     // Then, Installed, Top 3, Loadable, NotDetected
     const filteredAdapters = wallets.reduce<{
       previouslyConnected: Adapter[];
@@ -348,11 +362,8 @@ const UnifiedWalletModal: React.FC<IUnifiedWalletModal> = ({ onClose }) => {
 
     if (filteredAdapters.installed.length > 0) {
       const { installed, top3, ...rest } = filteredAdapters;
-      const highlight = [
-        ...installed.slice(0, 3),
-        ...top3.filter(Boolean),
-      ].filter(Boolean);
-      
+      const highlight = [...installed.slice(0, 3), ...top3.filter(Boolean)].filter(Boolean);
+
       const others = Object.values(rest)
         .flat()
         .sort((a, b) => PRIORITISE[a.readyState] - PRIORITISE[b.readyState])
@@ -372,7 +383,7 @@ const UnifiedWalletModal: React.FC<IUnifiedWalletModal> = ({ onClose }) => {
       .sort((a, b) => PRIORITISE[a.readyState] - PRIORITISE[b.readyState])
       .sort(sortByPrecedence(walletPrecedence || []));
     return { highlightedBy: 'TopWallet', highlight: top3, others };
-  }, [wallets, previouslyConnected]);
+  }, [wallets, previouslyConnected, telegramConfig]);
 
   const contentRef = useRef<HTMLDivElement>(null);
   useOutsideClick(contentRef, onClose);
