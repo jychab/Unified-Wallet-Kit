@@ -52,9 +52,8 @@ export const TelegramOnboardingIntro: React.FC<{
   }, [telegramConfig]);
 
   return (
-    <div tw="flex flex-col justify-center items-center p-10">
+    <div tw="flex flex-col justify-center items-center p-4">
       <img src={'https://unified.jup.ag/new_user_onboarding.png'} width={160} height={160} />
-
       <div tw="mt-4 flex flex-col justify-center items-center text-center">
         <span tw="text-lg font-semibold">{t(`Create a custodial wallet on ${botUsername}`)}</span>
         <span tw="mt-3 text-sm " css={[styles.subtitle[theme]]}>
@@ -127,7 +126,7 @@ export const TelegramEmailInput: React.FC<{
       tw="flex flex-col gap-4 justify-center "
     >
       <span tw="text-base font-semibold">
-        {t(`Successfully created your wallet. Add an email to recover your wallet in case of emergencies. (Optional)`)}
+        {t(`Successfully created your wallet. Add an email to recover your wallet in case of emergencies.`)}
       </span>
       <div tw="mt-4 w-full space-y-2">
         <input
@@ -353,9 +352,11 @@ export const TelegramOnboardingFlow = ({
       css={[tw`duration-500 animate-fade-in overflow-y-scroll`, animateOut ? tw`animate-fade-out opacity-0` : '']}
       className="hideScrollbar"
     >
-      <Header showProfilePic={false} onClose={onClose} />
       {flow === 'Onboarding' ? (
-        <TelegramOnboardingIntro flow={flow} setFlow={setFlowAnimated} botUsername={botUsername || ''} />
+        <div tw="flex flex-col justify-center items-center p-10">
+          <Header showProfilePic={false} onClose={onClose} />
+          <TelegramOnboardingIntro flow={flow} setFlow={setFlowAnimated} botUsername={botUsername || ''} />
+        </div>
       ) : null}
       {flow === 'Add Email' ? (
         <TelegramEmailInput flow={flow} setFlow={setFlowAnimated} onClose={onClose} email={email} setEmail={setEmail} />
