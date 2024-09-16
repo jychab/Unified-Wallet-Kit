@@ -83,7 +83,6 @@ export const TelegramOnboardingIntro: React.FC<{
                 setLoading(true);
                 await createPublicKey(telegramConfig.backendEndpoint, initDataRaw);
               } catch (e) {
-                console.log('Already created');
                 await verifyAndGetPublicKey(telegramConfig.backendEndpoint, initDataRaw);
               } finally {
                 setLoading(false);
@@ -123,7 +122,7 @@ export const TelegramEmailInput: React.FC<{
           setError('User not found. Please log in to telegram and try again.');
         }
       }}
-      tw="flex flex-col gap-4 justify-center "
+      tw="flex flex-col gap-4 justify-center p-4"
     >
       <span tw="text-base font-semibold">
         {t(`Successfully created your wallet. Add an email to recover your wallet in case of emergencies.`)}
@@ -250,7 +249,7 @@ export const TelegramEmailVerification: React.FC<{
     }
   };
   return (
-    <form onSubmit={handleSubmit} tw="flex flex-col gap-8 justify-center">
+    <form onSubmit={handleSubmit} tw="flex flex-col gap-8 justify-center p-4">
       <span tw="text-base font-semibold">{t(`Please enter the One Time Password (OTP) sent to your email.`)}</span>
       <div tw="w-full space-y-2">
         <div tw="flex items-center gap-x-4">
@@ -312,13 +311,6 @@ export const TelegramEmailVerification: React.FC<{
         </button>
       )}
       {error && <span tw="text-warning text-sm">{error}</span>}
-      <button
-        type="button"
-        css={[tw`mt-3 text-xs text-white/50 font-semibold`, styles.subtitle[theme]]}
-        onClick={() => onClose()}
-      >
-        {t(`Skip`)}
-      </button>
     </form>
   );
 };
