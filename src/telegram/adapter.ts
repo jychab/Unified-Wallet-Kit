@@ -32,8 +32,8 @@ export const TelegramWalletName = 'TelegramWallet' as WalletName<'TelegramWallet
 
 export class TelegramWalletAdapter extends BaseMessageSignerWalletAdapter {
   name = TelegramWalletName;
-  url = 'https://your-app-url.com'; // Your app's URL
-  icon = 'your-app-icon-url'; // Your app's icon URL
+  url = ''; // Your app's URL
+  icon = ''; // Your app's icon URL
   supportedTransactionVersions: ReadonlySet<TransactionVersion> = new Set(['legacy', 0]);
   readyState: WalletReadyState = WalletReadyState.NotDetected;
 
@@ -48,6 +48,8 @@ export class TelegramWalletAdapter extends BaseMessageSignerWalletAdapter {
     this._publicKey = null;
     this._wallet = null;
     this._config = config;
+    this.url = config.botDirectLink;
+    this.icon = config.botDisplayPic;
     if (this.readyState !== WalletReadyState.Unsupported) {
       try {
         retrieveLaunchParams();

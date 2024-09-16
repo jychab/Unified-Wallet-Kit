@@ -35,6 +35,7 @@ export interface TelegramConfig {
   backendEndpoint: string;
   botUsername: string;
   botDirectLink: string;
+  botDisplayPic: string;
 }
 
 export interface IUnifiedWalletConfig {

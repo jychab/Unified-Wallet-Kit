@@ -47,8 +47,8 @@ export const TelegramWalletButton: React.FC<{
       css={[tw`rounded-lg px-4 font-semibold w-auto items-center flex gap-2`, styles.container[theme]]}
       onClick={handleClick}
     >
-      <WalletIcon width={14} height={14} />
-      <span tw="truncate max-w-[100px] font-semibold">{userName}</span>
+      <WalletIcon width={16} height={16} />
+      <span tw="truncate max-w-[100px]">{userName}</span>
     </button>
   );
 };

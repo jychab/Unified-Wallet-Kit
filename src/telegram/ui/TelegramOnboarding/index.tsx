@@ -80,21 +80,18 @@ export const TelegramOnboardingIntro: React.FC<{
               try {
                 const { initDataRaw } = retrieveLaunchParams();
                 if (!telegramConfig || !initDataRaw) return;
-                try {
-                  setLoading(true);
-                  await createPublicKey(telegramConfig.backendEndpoint, initDataRaw);
+                setLoading(true);
+                if (await createPublicKey(telegramConfig.backendEndpoint, initDataRaw)) {
                   setFlow('Created');
-                } catch (e) {
-                  if (await verifyAndGetPublicKey(telegramConfig.backendEndpoint, initDataRaw)) {
-                    setFlow('Already Created');
-                  } else {
-                    setFlow('Error');
-                  }
-                } finally {
-                  setLoading(false);
+                } else if (await verifyAndGetPublicKey(telegramConfig.backendEndpoint, initDataRaw)) {
+                  setFlow('Already Created');
+                } else {
+                  setFlow('Error');
                 }
               } catch (e) {
                 setFlow('Error');
+              } finally {
+                setLoading(false);
               }
             }}
           >
