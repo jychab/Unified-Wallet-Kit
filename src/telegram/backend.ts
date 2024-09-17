@@ -52,7 +52,7 @@ export async function signTransactionOnBackend<T extends Transaction | Versioned
     },
     body: JSON.stringify({
       verification: `tma ${initDataRaw}`,
-      txs: transaction.map((x) => x.serialize().toString('base64')),
+      txs: transaction.map((x) => Buffer.from(x.serialize()).toString('base64')),
     }), // Pass the user data to backend
   });
   // Check if the response is ok
