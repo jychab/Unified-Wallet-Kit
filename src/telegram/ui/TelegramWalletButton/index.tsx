@@ -34,8 +34,10 @@ export const TelegramWalletButton: React.FC<{
     }
   }, [telegramConfig, publicKey]);
   const handleClick = useCallback(async () => {
-    setShowWalletModal(true);
-  }, [wallet]);
+    if (publicKey) {
+      setShowWalletModal(true);
+    }
+  }, [wallet, publicKey]);
 
   return overrideContent ? (
     // To prevent react render error where <button> is nested

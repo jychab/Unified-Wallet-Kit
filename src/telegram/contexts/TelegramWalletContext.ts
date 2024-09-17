@@ -11,13 +11,24 @@ export interface ITelegramConfig {
 
 export interface ITelegramWalletContext {
   telegramConfig: ITelegramConfig | undefined;
+  txSig: string | undefined;
+  setTxSig: (tx: string | undefined) => void;
   showWalletModal: boolean;
   simulatedTransaction:
-    | { transaction: Transaction | VersionedTransaction; onApproval: () => void; onCancel: () => void }
+    | {
+        transaction: Transaction | VersionedTransaction;
+        onApproval: () => void;
+        onCancel: () => void;
+      }
     | undefined;
   setTransactionSimulation: Dispatch<
     SetStateAction<
-      { transaction: Transaction | VersionedTransaction; onApproval: () => void; onCancel: () => void } | undefined
+      | {
+          transaction: Transaction | VersionedTransaction;
+          onApproval: () => void;
+          onCancel: () => void;
+        }
+      | undefined
     >
   >;
   setShowWalletModal: (showWalletModal: boolean) => void;
@@ -25,6 +36,8 @@ export interface ITelegramWalletContext {
 
 export const TelegramWalletContext = createContext<ITelegramWalletContext>({
   telegramConfig: undefined,
+  txSig: undefined,
+  setTxSig: () => {},
   showWalletModal: false,
   simulatedTransaction: undefined,
   setTransactionSimulation: () => {},

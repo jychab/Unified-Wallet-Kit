@@ -30,7 +30,12 @@ export function getOrCreateTelegramAdapter(
   config: ITelegramConfig,
   setTransactionSimulation: Dispatch<
     SetStateAction<
-      { transaction: Transaction | VersionedTransaction; onApproval: () => void; onCancel: () => void } | undefined
+      | {
+          transaction: Transaction | VersionedTransaction;
+          onApproval: () => void;
+          onCancel: () => void;
+        }
+      | undefined
     >
   >,
   setShowWalletModal: (showWalletModal: boolean) => void,
@@ -43,6 +48,7 @@ export function getOrCreateTelegramAdapter(
         console.log('Transaction approved by user');
         clearTimeout(timeoutId);
         setTransactionSimulation(undefined);
+        setShowWalletModal(false); // Close modal
         resolve(true); // User approved
       };
       const cancelTransaction = () => {
@@ -50,12 +56,16 @@ export function getOrCreateTelegramAdapter(
         clearTimeout(timeoutId);
         setShowWalletModal(false); // Close modal
         setTransactionSimulation(undefined);
-        resolve(false); // User canceled
+        resolve(false); // User approved
       };
 
       console.log('Setting transaction simulation and opening modal');
       setShowWalletModal(true);
-      setTransactionSimulation({ transaction: x, onApproval: approveTransaction, onCancel: cancelTransaction });
+      setTransactionSimulation({
+        transaction: x,
+        onApproval: approveTransaction,
+        onCancel: cancelTransaction,
+      });
       // Set up a timeout to automatically resolve after 1 minute (60000ms)
       timeoutId = setTimeout(() => {
         console.log('Transaction timed out after 1 minute');
@@ -109,19 +119,30 @@ export async function getAssetsByOwner(rpcEndpoint: string, publicKey: string): 
   return result;
 }
 
-export async function confirmTransaction(txSig: string, connection: Connection) {
-  const getBlockHash = await connection.getLatestBlockhash();
-  const result = await connection.confirmTransaction({
-    signature: txSig,
-    blockhash: getBlockHash.blockhash,
-    lastValidBlockHeight: getBlockHash.lastValidBlockHeight,
-  });
-  if (result.value.err) {
-    throw new Error(JSON.stringify(result.value));
+export async function sendAndConfirmTransaction(tx: Uint8Array, connection: Connection): Promise<string> {
+  try {
+    const timeout = 60000;
+    const startTime = Date.now();
+    let txSig;
+
+    while (Date.now() - startTime < timeout) {
+      try {
+        txSig = await connection.sendRawTransaction(tx, {
+          skipPreflight: true,
+        });
+
+        return await pollTransactionConfirmation(connection, txSig);
+      } catch (error) {
+        continue;
+      }
+    }
+    return txSig;
+  } catch (e) {
+    throw e;
   }
 }
 
-export async function buildAndSendTransaction(
+export async function buildAndSignTransaction(
   ixs: TransactionInstruction[],
   payer: PublicKey,
   signTransaction: <T extends Transaction | VersionedTransaction>(transaction: T) => Promise<T>,
@@ -143,7 +164,7 @@ export async function buildAndSendTransaction(
     if (units) {
       ixs.unshift(
         ComputeBudgetProgram.setComputeUnitLimit({
-          units: Math.ceil(units),
+          units: Math.ceil(Math.max(units * 1.1, 5000)),
         }),
       );
     }
@@ -156,31 +177,10 @@ export async function buildAndSendTransaction(
     }).compileToV0Message(lookupTables),
   );
   console.log('Versioned Tx:', tx);
-  tx = await signTransaction(tx);
-  console.log('test');
-  try {
-    const timeout = 60000;
-    const startTime = Date.now();
-    let txSig;
-
-    while (Date.now() - startTime < timeout) {
-      try {
-        txSig = await connection.sendRawTransaction(tx.serialize(), {
-          skipPreflight: true,
-        });
-
-        return await pollTransactionConfirmation(connection, txSig);
-      } catch (error) {
-        continue;
-      }
-    }
-    return txSig;
-  } catch (e) {
-    throw e;
-  }
+  return await signTransaction(tx);
 }
 
-async function pollTransactionConfirmation(
+export async function pollTransactionConfirmation(
   connection: Connection,
   txSig: TransactionSignature,
 ): Promise<TransactionSignature> {

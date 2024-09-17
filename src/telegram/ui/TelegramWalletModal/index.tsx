@@ -8,6 +8,7 @@ import { Header } from './components/Header';
 import { DepositPage } from './DepositPage';
 import { MainPage } from './MainPage';
 import { TokenListPage } from './TokenListPage';
+import { TransactionConfirmationPage } from './TransactionConfirmationPage';
 import { TransactionSimulationPage } from './TransactionSimulationPage';
 import { WithdrawalPage } from './WithdrawalPage';
 
@@ -27,15 +28,15 @@ export type ITelegramWalletFlow = 'Main' | 'Deposit' | 'TokenList' | 'Withdrawal
 
 export const TelegramWalletModal: React.FC<ITelegramWalletModal> = ({ onClose }) => {
   const { theme } = useUnifiedWalletContext();
-  const { telegramConfig, simulatedTransaction } = useTelegramWalletContext();
+  const { telegramConfig, simulatedTransaction, txSig } = useTelegramWalletContext();
   const { publicKey } = useUnifiedWallet();
   const contentRef = useRef<HTMLDivElement>(null);
   const [flow, setFlow] = useState<ITelegramWalletFlow>('Main');
   useOutsideClick(contentRef, onClose);
   const [selectedToken, setSelectedToken] = useState<any>();
-  // Ensure only one component is rendered
+
   if (!publicKey && telegramConfig && !simulatedTransaction) {
-    return null; // Don't render the modal if conditions are not met
+    return null;
   }
 
   return (
@@ -46,10 +47,13 @@ export const TelegramWalletModal: React.FC<ITelegramWalletModal> = ({ onClose })
         styles.container[theme],
       ]}
     >
-      {simulatedTransaction ? (
+      {' '}
+      {txSig ? (
+        <TransactionConfirmationPage setFlow={setFlow} />
+      ) : simulatedTransaction ? (
         <TransactionSimulationPage />
-      ) : !publicKey && telegramConfig ? (
-        <TelegramOnboardingFlow botUsername={telegramConfig.botUsername} onClose={onClose} />
+      ) : !publicKey ? (
+        telegramConfig && <TelegramOnboardingFlow botUsername={telegramConfig.botUsername} onClose={onClose} />
       ) : (
         <div>
           <Header onClose={onClose} />

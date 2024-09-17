@@ -2,6 +2,7 @@ import { FC } from 'react';
 import { IStandardStyle, useUnifiedWalletContext } from 'src/contexts/UnifiedWalletContext';
 import { useTelegramWalletContext } from 'src/telegram/contexts/TelegramWalletContext';
 import tw from 'twin.macro';
+import { ITelegramWalletFlow } from '.';
 
 const styles: IStandardStyle = {
   container: {
@@ -41,41 +42,38 @@ const styles: IStandardStyle = {
   },
 };
 
-export const TransactionSimulationPage: FC = () => {
+export const TransactionConfirmationPage: FC<{ setFlow: (flow: ITelegramWalletFlow) => void }> = ({ setFlow }) => {
   const { theme } = useUnifiedWalletContext();
-  const { simulatedTransaction, telegramConfig } = useTelegramWalletContext();
+  const { txSig, setTxSig } = useTelegramWalletContext();
 
   return (
     <div tw="flex flex-col items-center justify-center gap-4 pt-4">
-      <div>Simulation...</div>
+      {txSig && txSig !== 'loading' && (
+        <img src={'https://buckets.blinksfeed.com/success.gif'} width={160} height={160} alt="" />
+      )}
+      <div tw="mt-4 flex flex-col justify-center items-center text-center">
+        <span tw="text-lg font-semibold">
+          {txSig == 'loading' ? 'Sending Transaction...' : 'Transaction Successful'}
+        </span>
+        {txSig && txSig !== 'loading' && (
+          <a target="_blank" rel="noopener noreferrer" tw="underline font-bold" href={`https://solscan.io/tx/txSig`}>
+            {`View Transaction`}
+          </a>
+        )}
+      </div>
       <div tw="flex justify-between gap-4 mt-8 items-center w-full">
         <button
           type="button"
-          onClick={(e) => {
-            if (simulatedTransaction) {
-              simulatedTransaction.onCancel();
-            }
-          }}
-          css={[
-            tw`text-white font-semibold text-base w-full rounded-lg border border-white/10 py-4 leading-none`,
-            styles.walletButton[theme],
-          ]}
-        >
-          {`Cancel`}
-        </button>
-        <button
-          type="button"
           onClick={async (e) => {
-            if (simulatedTransaction && telegramConfig) {
-              simulatedTransaction.onApproval();
-            }
+            setTxSig(undefined);
+            setFlow('Main');
           }}
           css={[
             tw`text-white font-semibold text-base w-full rounded-lg border border-white/10 py-4 leading-none`,
             styles.walletButton[theme],
           ]}
         >
-          {'Approve'}
+          {'Back To Home'}
         </button>
       </div>
     </div>

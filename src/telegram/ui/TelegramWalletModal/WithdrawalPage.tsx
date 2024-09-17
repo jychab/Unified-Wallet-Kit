@@ -3,7 +3,7 @@ import { Connection, PublicKey, SystemProgram } from '@solana/web3.js';
 import { FC, FormEvent, useState } from 'react';
 import { IStandardStyle, useUnifiedWallet, useUnifiedWalletContext } from 'src/contexts/UnifiedWalletContext';
 import { useTelegramWalletContext } from 'src/telegram/contexts/TelegramWalletContext';
-import { buildAndSendTransaction } from 'src/telegram/helpers';
+import { buildAndSignTransaction, sendAndConfirmTransaction } from 'src/telegram/helpers';
 import tw from 'twin.macro';
 import { ITelegramWalletFlow } from '.';
 import LeftArrowIcon from '../icons/LeftArrowIcon';
@@ -52,9 +52,7 @@ export const WithdrawalPage: FC<{ token: any; setFlow: (flow: ITelegramWalletFlo
   setFlow,
 }) => {
   const { publicKey, signTransaction } = useUnifiedWallet();
-
-  const { telegramConfig } = useTelegramWalletContext();
-  const [loading, setLoading] = useState(false);
+  const { telegramConfig, setShowWalletModal, setTxSig } = useTelegramWalletContext();
   const { theme } = useUnifiedWalletContext();
 
   const [recipient, setRecipient] = useState('');
@@ -80,19 +78,15 @@ export const WithdrawalPage: FC<{ token: any; setFlow: (flow: ITelegramWalletFlo
       return;
     }
     try {
-      setLoading(true);
+      let tx;
+      const connection = new Connection(telegramConfig.rpcEndpoint);
       if (token.id == NATIVE_SOL) {
         const transferIx = SystemProgram.transfer({
           fromPubkey: publicKey,
           toPubkey: new PublicKey(recipient),
-          lamports: parseInt(amount) * 10 ** token.token_info.decimals,
+          lamports: parseFloat(amount) * 10 ** token.token_info.decimals,
         });
-        await buildAndSendTransaction(
-          [transferIx],
-          publicKey,
-          signTransaction,
-          new Connection(telegramConfig.rpcEndpoint),
-        );
+        tx = await buildAndSignTransaction([transferIx], publicKey, signTransaction, connection);
       } else {
         const tokenProgram = new PublicKey(token.token_info.token_program);
         const source = await Token.getAssociatedTokenAddress(
@@ -116,20 +110,20 @@ export const WithdrawalPage: FC<{ token: any; setFlow: (flow: ITelegramWalletFlo
           destination,
           publicKey,
           [],
-          parseInt(amount) * 10 ** token.token_info.decimals,
+          parseFloat(amount) * 10 ** token.token_info.decimals,
           token.token_info.decimals,
         );
-        await buildAndSendTransaction(
-          [transferIx],
-          publicKey,
-          signTransaction,
-          new Connection(telegramConfig.rpcEndpoint),
-        );
+        tx = await buildAndSignTransaction([transferIx], publicKey, signTransaction, connection);
       }
+      console.log('Signed Tx:', tx);
+      // show modal
+      setShowWalletModal(true);
+      setTxSig('loading');
+      const txSig = await sendAndConfirmTransaction(tx.serialize(), connection);
+      console.log('Tx Sig:', txSig);
+      setTxSig(txSig);
     } catch (e) {
       console.log(e);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -225,7 +219,7 @@ export const WithdrawalPage: FC<{ token: any; setFlow: (flow: ITelegramWalletFlo
             styles.walletButton[theme],
           ]}
         >
-          {loading ? `Submitting` : 'Next'}
+          {'Next'}
         </button>
       </div>
     </form>

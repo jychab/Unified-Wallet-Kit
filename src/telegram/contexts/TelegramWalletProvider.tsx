@@ -15,6 +15,7 @@ const TelegramWalletContextProvider: React.FC<
     config?: ITelegramConfig;
   } & PropsWithChildren
 > = ({ config, children }) => {
+  const [txSig, setTxSig] = useState<string>();
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [simulatedTransaction, setTransactionSimulation] = useState<
     { transaction: Transaction | VersionedTransaction; onApproval: () => void; onCancel: () => void } | undefined
@@ -23,6 +24,8 @@ const TelegramWalletContextProvider: React.FC<
   return (
     <TelegramWalletContext.Provider
       value={{
+        txSig,
+        setTxSig,
         telegramConfig: config,
         showWalletModal,
         setShowWalletModal,

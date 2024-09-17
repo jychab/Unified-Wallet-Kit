@@ -70,8 +70,8 @@ export class TelegramWalletImpl extends EventEmitter<TelegramWalletEvents> imple
     try {
       const { initDataRaw } = retrieveLaunchParams();
       if (!initDataRaw) throw Error('Telegram User not found.');
-      const isApproved = await this.simulationCallback(transaction);
-      if (!isApproved) throw new Error('Transaction was not approved.');
+      const result = await this.simulationCallback(transaction);
+      if (!result) throw new Error('Transaction was not approved.');
       // Sign the transaction using Telegram's authentication or your own signing mechanism
       const [signedTransaction] = await signTransactionOnBackend(
         this.config.backendEndpoint,
@@ -88,10 +88,11 @@ export class TelegramWalletImpl extends EventEmitter<TelegramWalletEvents> imple
     try {
       const { initDataRaw } = retrieveLaunchParams();
       if (!initDataRaw) throw Error('Telegram User not found.');
-      const isApproved = await Promise.all(transactions.map((transaction) => this.simulationCallback(transaction)));
-      if (isApproved.some((x) => !x)) throw new Error('Transaction was not approved.');
+      const result = await Promise.all(transactions.map((transaction) => this.simulationCallback(transaction)));
+      if (result.some((x) => !x)) throw new Error('Transaction was not approved.');
       // Sign all transactions
       const signedTransactions = signTransactionOnBackend(this.config.backendEndpoint, transactions, initDataRaw);
+
       return signedTransactions;
     } catch (e) {
       throw Error('Telegram User not found.');
@@ -105,13 +106,14 @@ export class TelegramWalletImpl extends EventEmitter<TelegramWalletEvents> imple
     try {
       const { initDataRaw } = retrieveLaunchParams();
       if (!initDataRaw) throw Error('Telegram User not found.');
-      const isApproved = await this.simulationCallback(transaction);
-      if (!isApproved) throw new Error('Transaction was not approved.');
+      const result = await this.simulationCallback(transaction);
+      if (!result) throw new Error('Transaction was not approved.');
       const [signedTransaction] = await signTransactionOnBackend(
         this.config.backendEndpoint,
         [transaction],
         initDataRaw,
       );
+
       const signature = await sendTransactionToBlockchain(this.config.rpcEndpoint, signedTransaction, options);
       return { signature };
     } catch (e) {
