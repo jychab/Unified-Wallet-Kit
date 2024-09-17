@@ -2,12 +2,12 @@ import { useRef, useState } from 'react';
 import { IStandardStyle, useUnifiedWallet, useUnifiedWalletContext } from 'src/contexts/UnifiedWalletContext';
 import { useOutsideClick } from 'src/misc/utils';
 import tw from 'twin.macro';
-import { TelegramOnboardingFlow } from '../TelegramOnboarding';
+import { Header } from './components/Header';
 import { DepositPage } from './DepositPage';
 import { MainPage } from './MainPage';
 import { TokenListPage } from './TokenListPage';
+import { TransactionSimulationPage } from './TransactionSimulationPage';
 import { WithdrawalPage } from './WithdrawalPage';
-import { Header } from './components/Header';
 
 const styles: IStandardStyle = {
   container: {
@@ -24,14 +24,14 @@ interface ITelegramWalletModal {
 export type ITelegramWalletFlow = 'Main' | 'Deposit' | 'TokenList' | 'Withdrawal';
 
 export const TelegramWalletModal: React.FC<ITelegramWalletModal> = ({ onClose }) => {
-  const { theme, telegramConfig } = useUnifiedWalletContext();
+  const { theme, telegramConfig, simulatedTransaction } = useUnifiedWalletContext();
   const { publicKey } = useUnifiedWallet();
   const contentRef = useRef<HTMLDivElement>(null);
   const [flow, setFlow] = useState<ITelegramWalletFlow>('Main');
   useOutsideClick(contentRef, onClose);
   const [selectedToken, setSelectedToken] = useState<any>();
 
-  if (!publicKey && telegramConfig) {
+  if (simulatedTransaction) {
     return (
       <div
         ref={contentRef}
@@ -40,10 +40,24 @@ export const TelegramWalletModal: React.FC<ITelegramWalletModal> = ({ onClose })
           styles.container[theme],
         ]}
       >
-        <TelegramOnboardingFlow botUsername={telegramConfig.botUsername} onClose={onClose} />
+        <TransactionSimulationPage />
       </div>
     );
   }
+
+  // if (!publicKey && telegramConfig) {
+  //   return (
+  //     <div
+  //       ref={contentRef}
+  //       css={[
+  //         tw`max-w-md p-4 w-full relative flex flex-col overflow-hidden rounded-xl max-h-[90vh] lg:max-h-[576px] transition-height duration-500 ease-in-out `,
+  //         styles.container[theme],
+  //       ]}
+  //     >
+  //       <TelegramOnboardingFlow botUsername={telegramConfig.botUsername} onClose={onClose} />
+  //     </div>
+  //   );
+  // }
 
   return (
     <div

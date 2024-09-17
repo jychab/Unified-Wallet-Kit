@@ -5,7 +5,6 @@ export const MWA_NOT_FOUND_ERROR = 'MWA_NOT_FOUND_ERROR';
 
 import { Cluster } from '@solana/web3.js';
 import { IUnifiedWalletConfig } from 'src/contexts/WalletConnectionProvider';
-import { TelegramWalletAdapter } from 'src/telegram/adapter';
 import { TelegramWalletButton, UnifiedWalletButton } from '..';
 import { AllLanguage } from '../../contexts/TranslationProvider/i18n';
 import { IUnifiedTheme } from '../../contexts/UnifiedWalletContext';
@@ -43,7 +42,7 @@ const ExampleAllWallets: React.FC<{ theme: IUnifiedTheme; lang: AllLanguage }> =
   };
   const params: Omit<Parameters<typeof UnifiedWalletProvider>[0], 'children'> = useMemo(
     () => ({
-      wallets: config.telegramConfig ? [new TelegramWalletAdapter(config.telegramConfig)] : [],
+      wallets: [],
       config: config,
     }),
     [config, theme, lang],

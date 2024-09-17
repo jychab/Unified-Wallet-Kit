@@ -39,8 +39,12 @@ export class TelegramWalletAdapter extends BaseMessageSignerWalletAdapter {
   private _publicKey: PublicKey | null;
   private _wallet: TelegramWallet | null;
   private _config: TelegramConfig;
+  private _simulationCallback: (transaction: Transaction | VersionedTransaction) => Promise<boolean>;
 
-  constructor(config: TelegramConfig) {
+  constructor(
+    config: TelegramConfig,
+    simulationCallback: (transaction: Transaction | VersionedTransaction) => Promise<boolean>,
+  ) {
     super();
     this._connecting = false;
     this._publicKey = null;
@@ -49,6 +53,7 @@ export class TelegramWalletAdapter extends BaseMessageSignerWalletAdapter {
     this.url = config.botDirectLink;
     this.icon = config.botDisplayPic;
     this.name = config.botUsername as WalletName;
+    this._simulationCallback = simulationCallback;
     if (this.readyState !== WalletReadyState.Unsupported) {
       try {
         retrieveLaunchParams();
@@ -84,7 +89,7 @@ export class TelegramWalletAdapter extends BaseMessageSignerWalletAdapter {
 
       this._connecting = true;
 
-      const wallet = getOrCreateTelegramWallet(this._config);
+      const wallet = getOrCreateTelegramWallet(this._config, this._simulationCallback);
       if (!wallet.isConnected) {
         try {
           await wallet.connect();

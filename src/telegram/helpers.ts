@@ -10,26 +10,63 @@ import {
   TransactionSignature,
   VersionedTransaction,
 } from '@solana/web3.js';
+import { Dispatch, SetStateAction } from 'react';
 import { TelegramConfig } from 'src/contexts/WalletConnectionProvider';
+import { TelegramWalletAdapter } from './adapter';
+import { PersistentCache } from './cache';
 import { TelegramWallet, TelegramWalletImpl } from './wallet';
 
+export const cache = new PersistentCache(60 * 60 * 1000); // 1hr TTL
+
 // Factory function to create a wallet object
-export function getOrCreateTelegramWallet(config: TelegramConfig): TelegramWallet {
-  const cachedWallet = localStorage.getItem(config.botUsername)
-    ? JSON.parse(localStorage.getItem(config.botUsername)!)
-    : null;
+export function getOrCreateTelegramWallet(
+  config: TelegramConfig,
+  simulationCallback: (transaction: Transaction | VersionedTransaction) => Promise<boolean>,
+): TelegramWallet {
+  const key = config.botUsername + '/wallet';
+  const cachedWallet = cache.get(key) ? JSON.parse(cache.get(key)!) : null;
   if (cachedWallet) {
     // Use saved public key to initialize wallet (this will depend on your wallet implementation)
     return cachedWallet; // Modify as needed
   }
-  return new TelegramWalletImpl(config);
+  return new TelegramWalletImpl(config, simulationCallback);
+}
+
+export function getOrCreateTelegramAdapter(
+  config: TelegramConfig,
+  setTransactionSimulation: Dispatch<
+    SetStateAction<
+      { transaction: Transaction | VersionedTransaction; onApproval: () => void; onCancel: () => void } | undefined
+    >
+  >,
+  setShowWalletModal: (showWalletModal: boolean) => void,
+) {
+  const key = config.botUsername + '/adapter';
+  const cachedAdapter = cache.get(key) ? JSON.parse(cache.get(key)!) : null;
+  if (cachedAdapter) {
+    // Use saved public key to initialize wallet (this will depend on your wallet implementation)
+    return cachedAdapter; // Modify as needed
+  }
+  return new TelegramWalletAdapter(config, (x: Transaction | VersionedTransaction) => {
+    return new Promise((resolve) => {
+      const approveTransaction = () => {
+        resolve(true); // User approved
+        setShowWalletModal(false); // Close modal
+      };
+      const cancelTransaction = () => {
+        resolve(false); // User canceled
+        setShowWalletModal(false); // Close modal
+      };
+      setShowWalletModal(true);
+      setTransactionSimulation({ transaction: x, onApproval: approveTransaction, onCancel: cancelTransaction });
+    });
+  });
 }
 // Utility function to save wallet state to local storage
 
 export function saveWalletState(config: TelegramConfig, wallet: TelegramWallet | null) {
-  wallet
-    ? localStorage.setItem(config.botUsername, JSON.stringify(wallet))
-    : localStorage.removeItem(config.botUsername);
+  const key = config.botUsername + '/wallet';
+  return wallet ? cache.set(key, JSON.stringify(wallet)) : cache.clear(key);
 }
 
 export async function sendTransactionToBlockchain<T extends Transaction | VersionedTransaction>(

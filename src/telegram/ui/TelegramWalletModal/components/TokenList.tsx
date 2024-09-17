@@ -1,8 +1,7 @@
 import { NATIVE_MINT } from '@solana/spl-token';
 import { FC, useEffect, useState } from 'react';
 import { IStandardStyle, useUnifiedWallet, useUnifiedWalletContext } from 'src/contexts/UnifiedWalletContext';
-import { PersistentCache } from 'src/telegram/cache';
-import { getAssetsByOwner } from 'src/telegram/helpers';
+import { cache, getAssetsByOwner } from 'src/telegram/helpers';
 import tw from 'twin.macro';
 import { ITelegramWalletFlow } from '..';
 
@@ -104,12 +103,12 @@ const TokenCard: FC<{
           <span css={styles.text[theme]} tw="text-base font-bold">
             {token.content?.metadata.name || 'Unknown Token'}
           </span>
-          <span css={styles.subtitle[theme]} tw="text-sm ">
+          <span css={styles.subtitle[theme]} tw="text-sm truncate w-full max-w-[180px]">
             {`${(token.token_info?.balance || 0) / 10 ** (token.token_info?.decimals || 0)} ${token.content?.metadata.symbol}`}
           </span>
         </div>
       </div>
-      <span css={styles.text[theme]} tw="text-base font-bold">
+      <span css={styles.text[theme]} tw="text-base font-bold truncate max-w-[80px]">
         {showPrices ? price : ''}
       </span>
     </button>
@@ -142,8 +141,6 @@ const Summary: FC<{ total: number; setFlow: (flow: ITelegramWalletFlow) => void 
   );
 };
 
-const cache = new PersistentCache(5 * 60 * 1000); // 5 min TTL
-
 export const TokenList: FC<{
   showSummary?: boolean;
   showSearchBar?: boolean;
@@ -175,7 +172,7 @@ export const TokenList: FC<{
             .concat([nativeToken(result)]);
 
           setTokens(fetchedTokens);
-          cache.set(cacheKey, fetchedTokens);
+          cache.set(cacheKey, fetchedTokens, 5 * 60 * 1000); //5min ttl
         })
         .catch((error) => {
           console.error('Error fetching assets:', error);
@@ -196,7 +193,7 @@ export const TokenList: FC<{
     }
   }, [search, tokens]);
   return (
-    <div tw="overflow-y-scroll max-h-[430px]" className="hideScrollbar">
+    <div tw="overflow-y-scroll overflow-x-scroll w-full max-h-[430px]" className="hideScrollbar">
       <div tw="flex flex-col justify-center items-center w-full py-4 gap-2">
         {showSummary && <Summary total={tokens.reduce((sum, x) => sum + getTokenPrice(x), 0)} setFlow={setFlow} />}
         {showSearchBar && (

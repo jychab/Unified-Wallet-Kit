@@ -1,7 +1,7 @@
 import { retrieveLaunchParams } from '@telegram-apps/sdk-react';
 import React, { useEffect, useRef, useState } from 'react';
-import { TelegramWalletAdapter } from 'src/telegram/adapter';
 import { createPublicKey, verifyAndGetPublicKey } from 'src/telegram/backend';
+import { getOrCreateTelegramAdapter } from 'src/telegram/helpers';
 import tw from 'twin.macro';
 import { useTranslation } from '../../../contexts/TranslationProvider';
 import { IStandardStyle, useUnifiedWalletContext } from '../../../contexts/UnifiedWalletContext';
@@ -146,7 +146,8 @@ export const TelegramOnboardingFlow = ({
   botUsername: string | undefined;
   onClose: () => void;
 }) => {
-  const { handleConnectClick, telegramConfig } = useUnifiedWalletContext();
+  const { handleConnectClick, telegramConfig, setShowWalletModal, setTransactionSimulation } =
+    useUnifiedWalletContext();
   const [flow, setFlow] = useState<ITelegramOnboardingFlow>('Onboarding');
   const [animateOut, setAnimateOut] = useState(false);
 
@@ -180,7 +181,10 @@ export const TelegramOnboardingFlow = ({
             image="https://buckets.blinksfeed.com/success.gif"
             btnOnClick={(e) => {
               if (telegramConfig) {
-                handleConnectClick(e, new TelegramWalletAdapter(telegramConfig));
+                handleConnectClick(
+                  e,
+                  getOrCreateTelegramAdapter(telegramConfig, setTransactionSimulation, setShowWalletModal),
+                );
                 onClose();
               }
             }}
@@ -194,7 +198,10 @@ export const TelegramOnboardingFlow = ({
             image="https://buckets.blinksfeed.com/success.gif"
             btnOnClick={(e) => {
               if (telegramConfig) {
-                handleConnectClick(e, new TelegramWalletAdapter(telegramConfig));
+                handleConnectClick(
+                  e,
+                  getOrCreateTelegramAdapter(telegramConfig, setTransactionSimulation, setShowWalletModal),
+                );
                 onClose();
               }
             }}

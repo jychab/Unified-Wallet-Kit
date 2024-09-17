@@ -56,23 +56,32 @@ export const WithdrawalPage: FC<{ token: any; setFlow: (flow: ITelegramWalletFlo
   const [recipient, setRecipient] = useState('');
   const [amount, setAmount] = useState('');
   const handleInput = (e: React.FormEvent<HTMLInputElement>) => {
-    const value = e.currentTarget.value;
-    if (!/^\d*$/.test(value)) {
-      e.currentTarget.value = value.replace(/\D/g, ''); // Replace non-numeric characters
+    let value = e.currentTarget.value;
+
+    // Allow only digits and one decimal point
+    if (!/^\d*\.?\d*$/.test(value)) {
+      e.currentTarget.value = value.replace(/[^0-9.]/g, ''); // Replace non-numeric characters except for the decimal point
+
+      // Ensure only one decimal point is allowed
+      const parts = e.currentTarget.value.split('.');
+      if (parts.length > 2) {
+        e.currentTarget.value = parts[0] + '.' + parts.slice(1).join('');
+      }
     }
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     if (
       !telegramConfig ||
       !publicKey ||
       !token.token_info?.token_program ||
       !token.token_info.decimals ||
       !signTransaction
-    )
+    ) {
       return;
+    }
+
     try {
       setLoading(true);
       const tokenProgram = new PublicKey(token.token_info.token_program);

@@ -8,7 +8,7 @@ import { WalletIcon, WalletListItem } from './WalletListItem';
 import Collapse from '../../components/Collapse';
 
 import { SolanaMobileWalletAdapterWalletName } from '@solana-mobile/wallet-adapter-mobile';
-import { TelegramWalletAdapter } from 'src/telegram/adapter';
+import { getOrCreateTelegramAdapter } from 'src/telegram/helpers';
 import { useTranslation } from '../../contexts/TranslationProvider';
 import { IStandardStyle, useUnifiedWallet, useUnifiedWalletContext } from '../../contexts/UnifiedWalletContext';
 import { usePreviouslyConnected } from '../../contexts/WalletConnectionProvider/previouslyConnectedProvider';
@@ -292,13 +292,24 @@ const sortByPrecedence = (walletPrecedence: WalletName[]) => (a: Adapter, b: Ada
 
 const UnifiedWalletModal: React.FC<IUnifiedWalletModal> = ({ onClose }) => {
   const { wallets } = useUnifiedWallet();
-  const { walletPrecedence, theme, walletModalAttachments, telegramConfig } = useUnifiedWalletContext();
+  const {
+    walletPrecedence,
+    theme,
+    walletModalAttachments,
+    telegramConfig,
+    setShowWalletModal,
+    setTransactionSimulation,
+  } = useUnifiedWalletContext();
   const [isOpen, onToggle] = useToggle(false);
   const previouslyConnected = usePreviouslyConnected();
 
   const list: { highlightedBy: HIGHLIGHTED_BY; highlight: Adapter[]; others: Adapter[] } = useMemo(() => {
     if (telegramConfig) {
-      return { highlightedBy: 'TopAndRecommended', highlight: [new TelegramWalletAdapter(telegramConfig)], others: [] };
+      return {
+        highlightedBy: 'TopAndRecommended',
+        highlight: [getOrCreateTelegramAdapter(telegramConfig, setTransactionSimulation, setShowWalletModal)],
+        others: [],
+      };
     }
     // Then, Installed, Top 3, Loadable, NotDetected
     const filteredAdapters = wallets.reduce<{

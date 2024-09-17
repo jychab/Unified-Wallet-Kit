@@ -1,7 +1,7 @@
 import type { Adapter, SendTransactionOptions, WalletName } from '@solana/wallet-adapter-base';
 import type { WalletContextState } from '@solana/wallet-adapter-react';
 import type { Connection, Transaction, VersionedTransaction } from '@solana/web3.js';
-import { createContext, useContext } from 'react';
+import { createContext, Dispatch, SetStateAction, useContext } from 'react';
 import { TwStyle } from 'twin.macro';
 import { IUnifiedWalletConfig } from './WalletConnectionProvider';
 
@@ -15,6 +15,14 @@ export interface IUnifiedWalletContext {
   handleConnectClick: (event: React.MouseEvent<HTMLElement, globalThis.MouseEvent>, wallet: Adapter) => Promise<void>;
   showModal: boolean;
   showWalletModal: boolean;
+  simulatedTransaction:
+    | { transaction: Transaction | VersionedTransaction; onApproval: () => void; onCancel: () => void }
+    | undefined;
+  setTransactionSimulation: Dispatch<
+    SetStateAction<
+      { transaction: Transaction | VersionedTransaction; onApproval: () => void; onCancel: () => void } | undefined
+    >
+  >;
   setShowWalletModal: (showWalletModal: boolean) => void;
   setShowModal: (showModal: boolean) => void;
   walletlistExplanation: IUnifiedWalletConfig['walletlistExplanation'];
@@ -29,6 +37,8 @@ export const UnifiedWalletContext = createContext<IUnifiedWalletContext>({
   handleConnectClick: async (event: React.MouseEvent<HTMLElement, globalThis.MouseEvent>, wallet: Adapter) => {},
   showModal: false,
   showWalletModal: false,
+  simulatedTransaction: undefined,
+  setTransactionSimulation: () => {},
   setShowWalletModal: (showWalletModal: boolean) => {},
   setShowModal: (showModal: boolean) => {},
   walletlistExplanation: undefined,

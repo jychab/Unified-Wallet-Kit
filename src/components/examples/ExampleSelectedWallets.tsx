@@ -1,29 +1,23 @@
-import React from 'react';
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import 'twin.macro';
 
 import { UnifiedWalletProvider } from '../../contexts/UnifiedWalletProvider';
 import { UnifiedWalletButton } from '../UnifiedWalletButton';
 
+import { Adapter, BaseSignerWalletAdapter, WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 import {
-  PhantomWalletAdapter,
   CoinbaseWalletAdapter,
+  PhantomWalletAdapter,
+  SolflareWalletAdapter,
   TrustWalletAdapter,
   WalletConnectWalletAdapter,
 } from '@solana/wallet-adapter-wallets';
-import {
-  initialize as initializeSolflareAndMetamaskSnap,
-  SolflareWalletAdapter,
-} from '@solflare-wallet/wallet-adapter';
-import { WalletAdapterWithMutableSupportedTransactionVersions, metadata } from './constants';
-import { Adapter, BaseSignerWalletAdapter, WalletAdapterNetwork } from '@solana/wallet-adapter-base';
-import WalletNotification from './WalletNotification';
-import CodeBlocks from '../CodeBlocks/CodeBlocks';
-import { HARDCODED_DECLARTION_BLOCK, HARDCODED_WALLET_CODEBLOCK } from './snippets/ExampleSelectedWalletsSnippet';
-import { IUnifiedTheme } from '../../contexts/UnifiedWalletContext';
 import { AllLanguage } from '../../contexts/TranslationProvider/i18n';
-
-initializeSolflareAndMetamaskSnap();
+import { IUnifiedTheme } from '../../contexts/UnifiedWalletContext';
+import CodeBlocks from '../CodeBlocks/CodeBlocks';
+import { WalletAdapterWithMutableSupportedTransactionVersions, metadata } from './constants';
+import { HARDCODED_DECLARTION_BLOCK, HARDCODED_WALLET_CODEBLOCK } from './snippets/ExampleSelectedWalletsSnippet';
+import WalletNotification from './WalletNotification';
 
 const ExampleSelectedWallets: React.FC<{ theme: IUnifiedTheme; lang: AllLanguage }> = ({ theme, lang }) => {
   const wallets: Adapter[] = useMemo(() => {

@@ -1,7 +1,7 @@
 import { PropsWithChildren, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useWallet, Wallet, WalletContextState } from '@solana/wallet-adapter-react';
-import { PublicKey } from '@solana/web3.js';
+import { PublicKey, Transaction, VersionedTransaction } from '@solana/web3.js';
 
 import { Adapter, WalletReadyState } from '@solana/wallet-adapter-base';
 import { usePrevious } from 'react-use';
@@ -66,6 +66,14 @@ const UnifiedWalletContextProvider: React.FC<
 
   const [showModal, setShowModal] = useState(false);
   const [showWalletModal, setShowWalletModal] = useState(false);
+  const [simulatedTransaction, setTransactionSimulation] = useState<
+    | {
+        transaction: Transaction | VersionedTransaction;
+        onApproval: () => void;
+        onCancel: () => void;
+      }
+    | undefined
+  >();
 
   const handleConnectClick = useCallback(
     async (event: React.MouseEvent<HTMLElement, globalThis.MouseEvent>, adapter: Adapter) => {
@@ -162,6 +170,8 @@ const UnifiedWalletContextProvider: React.FC<
         setShowModal,
         showWalletModal,
         setShowWalletModal,
+        simulatedTransaction,
+        setTransactionSimulation,
         walletlistExplanation: config.walletlistExplanation,
         theme: config.theme || 'light',
         walletAttachments: config.walletAttachments || {},

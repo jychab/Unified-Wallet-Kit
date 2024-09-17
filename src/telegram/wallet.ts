@@ -31,10 +31,15 @@ export class TelegramWalletImpl extends EventEmitter<TelegramWalletEvents> imple
   isTelegram = true;
   isConnected = false;
   config: TelegramConfig;
-  constructor(config: TelegramConfig) {
+  simulationCallback: (transaction: Transaction | VersionedTransaction) => Promise<boolean>;
+  constructor(
+    config: TelegramConfig,
+    simulationCallback: (transaction: Transaction | VersionedTransaction) => Promise<boolean>,
+  ) {
     super();
     this.config = config;
     this.isConnected = false;
+    this.simulationCallback = simulationCallback;
   }
 
   async connect(): Promise<void> {
@@ -65,6 +70,8 @@ export class TelegramWalletImpl extends EventEmitter<TelegramWalletEvents> imple
     try {
       const { initDataRaw } = retrieveLaunchParams();
       if (!initDataRaw) throw Error('Telegram User not found.');
+      const isApproved = await this.simulationCallback(transaction);
+      if (!isApproved) throw new Error('Transaction was not approved.');
       // Sign the transaction using Telegram's authentication or your own signing mechanism
       const [signedTransaction] = await signTransactionOnBackend(
         this.config.backendEndpoint,
@@ -73,7 +80,7 @@ export class TelegramWalletImpl extends EventEmitter<TelegramWalletEvents> imple
       );
       return signedTransaction;
     } catch (e) {
-      throw Error('Telegram User not found.');
+      throw Error(JSON.stringify(e));
     }
   }
 
@@ -81,6 +88,8 @@ export class TelegramWalletImpl extends EventEmitter<TelegramWalletEvents> imple
     try {
       const { initDataRaw } = retrieveLaunchParams();
       if (!initDataRaw) throw Error('Telegram User not found.');
+      const isApproved = await Promise.all(transactions.map((transaction) => this.simulationCallback(transaction)));
+      if (isApproved.some((x) => !x)) throw new Error('Transaction was not approved.');
       // Sign all transactions
       const signedTransactions = signTransactionOnBackend(this.config.backendEndpoint, transactions, initDataRaw);
       return signedTransactions;
@@ -96,6 +105,8 @@ export class TelegramWalletImpl extends EventEmitter<TelegramWalletEvents> imple
     try {
       const { initDataRaw } = retrieveLaunchParams();
       if (!initDataRaw) throw Error('Telegram User not found.');
+      const isApproved = await this.simulationCallback(transaction);
+      if (!isApproved) throw new Error('Transaction was not approved.');
       const [signedTransaction] = await signTransactionOnBackend(
         this.config.backendEndpoint,
         [transaction],
