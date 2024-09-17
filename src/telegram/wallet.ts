@@ -1,8 +1,8 @@
 import { EventEmitter } from '@solana/wallet-adapter-base';
 import { PublicKey, SendOptions, Transaction, TransactionSignature, VersionedTransaction } from '@solana/web3.js';
 import { retrieveLaunchParams } from '@telegram-apps/sdk-react';
-import { ITelegramConfig } from 'src/contexts/WalletConnectionProvider';
 import { signMessageOnBackend, signTransactionOnBackend, verifyAndGetPublicKey } from './backend';
+import { ITelegramConfig } from './contexts/TelegramWalletContext';
 import { sendTransactionToBlockchain } from './helpers';
 
 interface TelegramWalletEvents {

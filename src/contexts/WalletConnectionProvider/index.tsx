@@ -30,19 +30,10 @@ export interface IWalletNotification {
   };
 }
 
-export interface ITelegramConfig {
-  rpcEndpoint: string;
-  backendEndpoint: string;
-  botUsername: string;
-  botDirectLink: string;
-  botDisplayPic: string;
-}
-
 export interface IUnifiedWalletConfig {
   autoConnect: boolean;
   metadata: IUnifiedWalletMetadata;
   env: Cluster;
-  telegramConfig?: ITelegramConfig;
   walletPrecedence?: WalletName[];
   hardcodedWallets?: IHardcodedWalletStandardAdapter[];
   notificationCallback?: {

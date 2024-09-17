@@ -3,8 +3,7 @@ import { PropsWithChildren, useState } from 'react';
 import { WalletContextState } from '@solana/wallet-adapter-react';
 import { Transaction, VersionedTransaction } from '@solana/web3.js';
 
-import { ITelegramConfig } from 'src/contexts/WalletConnectionProvider';
-import { TelegramWalletContext } from './TelegramWalletContext';
+import { ITelegramConfig, TelegramWalletContext } from './TelegramWalletContext';
 
 export type IWalletProps = Omit<
   WalletContextState,

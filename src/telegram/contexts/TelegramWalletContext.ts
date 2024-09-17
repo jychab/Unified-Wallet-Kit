@@ -1,6 +1,13 @@
 import type { Transaction, VersionedTransaction } from '@solana/web3.js';
 import { createContext, Dispatch, SetStateAction, useContext } from 'react';
-import { ITelegramConfig } from 'src/contexts/WalletConnectionProvider';
+
+export interface ITelegramConfig {
+  rpcEndpoint: string;
+  backendEndpoint: string;
+  botUsername: string;
+  botDirectLink: string;
+  botDisplayPic: string;
+}
 
 export interface ITelegramWalletContext {
   telegramConfig: ITelegramConfig | undefined;

@@ -25,7 +25,7 @@ import {
   VersionedTransaction,
 } from '@solana/web3.js';
 import { retrieveLaunchParams } from '@telegram-apps/sdk-react';
-import { ITelegramConfig } from 'src/contexts/WalletConnectionProvider';
+import { ITelegramConfig } from './contexts/TelegramWalletContext';
 import { getOrCreateTelegramWallet, saveWalletState } from './helpers';
 import { TelegramWallet } from './wallet';
 

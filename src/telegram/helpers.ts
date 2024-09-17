@@ -11,9 +11,9 @@ import {
   VersionedTransaction,
 } from '@solana/web3.js';
 import { Dispatch, SetStateAction } from 'react';
-import { ITelegramConfig } from 'src/contexts/WalletConnectionProvider';
 import { TelegramWalletAdapter } from './adapter';
 import { PersistentCache } from './cache';
+import { ITelegramConfig } from './contexts/TelegramWalletContext';
 import { TelegramWallet, TelegramWalletImpl } from './wallet';
 
 export const cache = new PersistentCache(60 * 60 * 1000); // 1hr TTL
@@ -64,11 +64,10 @@ export function getOrCreateTelegramAdapter(
       }, 60000); // 1 minute timeout
     });
   };
-  const adapter = new TelegramWalletAdapter(config, simulationCallback);
-  return adapter;
+  return new TelegramWalletAdapter(config, simulationCallback);
 }
-// Utility function to save wallet state to local storage
 
+// Utility function to save wallet state to local storage
 export function saveWalletState(config: ITelegramConfig, wallet: TelegramWallet | null) {
   const key = config.botUsername + '/wallet';
   return wallet ? cache.set(key, JSON.stringify(wallet)) : cache.clear(key);
