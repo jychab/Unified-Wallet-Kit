@@ -2,6 +2,7 @@ import {
   BaseMessageSignerWalletAdapter,
   isVersionedTransaction,
   SendTransactionOptions,
+  WalletAccountError,
   WalletConnectionError,
   WalletDisconnectedError,
   WalletDisconnectionError,
@@ -90,6 +91,7 @@ export class TelegramWalletAdapter extends BaseMessageSignerWalletAdapter {
       this._connecting = true;
 
       const wallet = getOrCreateTelegramWallet(this._config, this._simulationCallback);
+
       if (!wallet.isConnected) {
         try {
           await wallet.connect();
@@ -98,10 +100,7 @@ export class TelegramWalletAdapter extends BaseMessageSignerWalletAdapter {
         }
       }
 
-      if (!wallet.publicKey) {
-        // prompt user to create a custodial wallet using their email as recovery address
-        return;
-      }
+      if (!wallet.publicKey) throw new WalletAccountError();
 
       let publicKey: PublicKey;
       try {
