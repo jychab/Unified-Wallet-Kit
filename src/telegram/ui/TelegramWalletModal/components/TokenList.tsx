@@ -156,16 +156,14 @@ export const TokenList: FC<{
   // Fetch tokens and cache them
 
   useEffect(() => {
-    const cacheKey = `assets-${publicKey?.toBase58() || 'EhbriAJswgCHtZANnv5b1fGYzoe2gvQb72VxP2eo7ULH'}`;
+    if (!publicKey) return;
+    const cacheKey = `assets-${publicKey?.toBase58()}`;
     const cachedTokens = cache.get(cacheKey);
 
     if (cachedTokens) {
       setTokens(cachedTokens as any[]);
     } else if (telegramConfig?.rpcEndpoint) {
-      getAssetsByOwner(
-        telegramConfig.rpcEndpoint,
-        publicKey?.toBase58() || 'EhbriAJswgCHtZANnv5b1fGYzoe2gvQb72VxP2eo7ULH',
-      )
+      getAssetsByOwner(telegramConfig.rpcEndpoint, publicKey?.toBase58())
         .then((result) => {
           const fetchedTokens = result.items
             .filter((x) => x.interface === 'FungibleToken')
