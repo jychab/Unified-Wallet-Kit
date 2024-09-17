@@ -46,8 +46,8 @@ export function getOrCreateTelegramAdapter(
   if (cachedAdapter) {
     return cachedAdapter; // Modify as needed
   }
-  const adapter = new TelegramWalletAdapter(config, (x: Transaction | VersionedTransaction) => {
-    return new Promise((resolve) => {
+  const simulationCallback = (x: Transaction | VersionedTransaction) => {
+    return new Promise((resolve: (value: boolean) => any) => {
       const approveTransaction = () => {
         setShowWalletModal(false); // Close modal
         resolve(true); // User approved
@@ -59,7 +59,8 @@ export function getOrCreateTelegramAdapter(
       setShowWalletModal(true);
       setTransactionSimulation({ transaction: x, onApproval: approveTransaction, onCancel: cancelTransaction });
     });
-  });
+  };
+  const adapter = new TelegramWalletAdapter(config, simulationCallback);
   cache.set(key, adapter);
   return adapter;
 }

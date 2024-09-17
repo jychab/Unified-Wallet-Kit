@@ -91,6 +91,7 @@ export class TelegramWalletAdapter extends BaseMessageSignerWalletAdapter {
       this._connecting = true;
 
       const wallet = getOrCreateTelegramWallet(this._config, this._simulationCallback);
+      console.log(wallet);
 
       if (!wallet.isConnected) {
         try {
