@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { IStandardStyle, useUnifiedWallet, useUnifiedWalletContext } from 'src/contexts/UnifiedWalletContext';
 import { useOutsideClick } from 'src/misc/utils';
 import tw from 'twin.macro';
+import { TelegramOnboardingFlow } from '../TelegramOnboarding';
 import { Header } from './components/Header';
 import { DepositPage } from './DepositPage';
 import { MainPage } from './MainPage';
@@ -45,19 +46,19 @@ export const TelegramWalletModal: React.FC<ITelegramWalletModal> = ({ onClose })
     );
   }
 
-  // if (!publicKey && telegramConfig) {
-  //   return (
-  //     <div
-  //       ref={contentRef}
-  //       css={[
-  //         tw`max-w-md p-4 w-full relative flex flex-col overflow-hidden rounded-xl max-h-[90vh] lg:max-h-[576px] transition-height duration-500 ease-in-out `,
-  //         styles.container[theme],
-  //       ]}
-  //     >
-  //       <TelegramOnboardingFlow botUsername={telegramConfig.botUsername} onClose={onClose} />
-  //     </div>
-  //   );
-  // }
+  if (!publicKey && telegramConfig) {
+    return (
+      <div
+        ref={contentRef}
+        css={[
+          tw`max-w-md p-4 w-full relative flex flex-col overflow-hidden rounded-xl max-h-[90vh] lg:max-h-[576px] transition-height duration-500 ease-in-out `,
+          styles.container[theme],
+        ]}
+      >
+        <TelegramOnboardingFlow botUsername={telegramConfig.botUsername} onClose={onClose} />
+      </div>
+    );
+  }
 
   return (
     <div
