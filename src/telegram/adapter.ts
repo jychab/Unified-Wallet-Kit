@@ -25,7 +25,7 @@ import {
   VersionedTransaction,
 } from '@solana/web3.js';
 import { retrieveLaunchParams } from '@telegram-apps/sdk-react';
-import { TelegramConfig } from 'src/contexts/WalletConnectionProvider';
+import { ITelegramConfig } from 'src/contexts/WalletConnectionProvider';
 import { getOrCreateTelegramWallet, saveWalletState } from './helpers';
 import { TelegramWallet } from './wallet';
 
@@ -39,11 +39,11 @@ export class TelegramWalletAdapter extends BaseMessageSignerWalletAdapter {
   private _connecting: boolean;
   private _publicKey: PublicKey | null;
   private _wallet: TelegramWallet | null;
-  private _config: TelegramConfig;
+  private _config: ITelegramConfig;
   private _simulationCallback: (transaction: Transaction | VersionedTransaction) => Promise<boolean>;
 
   constructor(
-    config: TelegramConfig,
+    config: ITelegramConfig,
     simulationCallback: (transaction: Transaction | VersionedTransaction) => Promise<boolean>,
   ) {
     super();
@@ -91,7 +91,6 @@ export class TelegramWalletAdapter extends BaseMessageSignerWalletAdapter {
       this._connecting = true;
 
       const wallet = getOrCreateTelegramWallet(this._config, this._simulationCallback);
-      console.log(wallet);
 
       if (!wallet.isConnected) {
         try {

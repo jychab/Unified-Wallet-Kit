@@ -30,7 +30,7 @@ export interface IWalletNotification {
   };
 }
 
-export interface TelegramConfig {
+export interface ITelegramConfig {
   rpcEndpoint: string;
   backendEndpoint: string;
   botUsername: string;
@@ -42,7 +42,7 @@ export interface IUnifiedWalletConfig {
   autoConnect: boolean;
   metadata: IUnifiedWalletMetadata;
   env: Cluster;
-  telegramConfig?: TelegramConfig;
+  telegramConfig?: ITelegramConfig;
   walletPrecedence?: WalletName[];
   hardcodedWallets?: IHardcodedWalletStandardAdapter[];
   notificationCallback?: {

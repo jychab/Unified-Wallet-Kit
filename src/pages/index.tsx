@@ -1,26 +1,32 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import 'twin.macro';
 
+import { TelegramWalletProvider } from 'src/telegram/contexts/TelegramWalletProvider';
+import tw from 'twin.macro';
 import AppHeader from '../components/AppHeader/AppHeader';
 import Footer from '../components/Footer/Footer';
+import V2SexyChameleonText from '../components/SexyChameleonText/V2SexyChameleonText';
 import ExampleAllWallets from '../components/examples/ExampleAllWallets';
 import ExampleBaseOnly from '../components/examples/ExampleBaseOnly';
 import ExampleSelectedWallets from '../components/examples/ExampleSelectedWallets';
-import { IUnifiedTheme } from '../contexts/UnifiedWalletContext';
 import { AllLanguage, DEFAULT_LANGUAGE, LANGUAGE_LABELS, OTHER_LANGUAGES } from '../contexts/TranslationProvider/i18n';
-import tw from 'twin.macro';
-import V2SexyChameleonText from '../components/SexyChameleonText/V2SexyChameleonText';
+import { IUnifiedTheme } from '../contexts/UnifiedWalletContext';
 
 const Index = () => {
   const [theme, setTheme] = useState<IUnifiedTheme>('dark');
   const [lang, setLang] = useState<AllLanguage>('en');
-
+  const telegramConfig = {
+    botDisplayPic: 'https://buckets.blinksfeed.com/blinksfeed/logo.png',
+    botDirectLink: 'https://t.me/blinksfeedbot/blinksfeed',
+    rpcEndpoint: 'https://rpc.blinksfeed.com',
+    backendEndpoint: 'https://us-central1-token-60450.cloudfunctions.net/api',
+    botUsername: 'blinksfeedbot',
+  };
   return (
-    <>
+    <TelegramWalletProvider config={telegramConfig}>
       <div tw="bg-v3-bg h-screen w-screen max-w-[100vw] overflow-x-hidden flex flex-col justify-between">
         <div>
           <AppHeader />
-
           <div tw="">
             <div tw="flex flex-col items-center h-full w-full mt-4 md:mt-14">
               <div tw="flex flex-col justify-center items-center text-center">
@@ -106,7 +112,7 @@ const Index = () => {
           <Footer />
         </div>
       </div>
-    </>
+    </TelegramWalletProvider>
   );
 };
 

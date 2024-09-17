@@ -8,7 +8,7 @@ import { WalletIcon, WalletListItem } from './WalletListItem';
 import Collapse from '../../components/Collapse';
 
 import { SolanaMobileWalletAdapterWalletName } from '@solana-mobile/wallet-adapter-mobile';
-import { getOrCreateTelegramAdapter } from 'src/telegram/helpers';
+import { useTelegramWalletContext } from 'src/telegram/contexts/TelegramWalletContext';
 import { useTranslation } from '../../contexts/TranslationProvider';
 import { IStandardStyle, useUnifiedWallet, useUnifiedWalletContext } from '../../contexts/UnifiedWalletContext';
 import { usePreviouslyConnected } from '../../contexts/WalletConnectionProvider/previouslyConnectedProvider';
@@ -83,15 +83,9 @@ const ListOfWallets: React.FC<{
   onToggle: (nextValue?: any) => void;
   isOpen: boolean;
 }> = ({ list, onToggle, isOpen }) => {
-  const {
-    handleConnectClick,
-    walletlistExplanation,
-    walletAttachments,
-    theme,
-    setShowWalletModal,
-    setShowModal,
-    telegramConfig,
-  } = useUnifiedWalletContext();
+  const { handleConnectClick, walletlistExplanation, walletAttachments, theme, setShowModal } =
+    useUnifiedWalletContext();
+  const { telegramConfig, setShowWalletModal } = useTelegramWalletContext();
   const { t } = useTranslation();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showNotInstalled, setShowNotInstalled] = useState<Adapter | false>(false);
@@ -292,14 +286,8 @@ const sortByPrecedence = (walletPrecedence: WalletName[]) => (a: Adapter, b: Ada
 
 const UnifiedWalletModal: React.FC<IUnifiedWalletModal> = ({ onClose }) => {
   const { wallets } = useUnifiedWallet();
-  const {
-    walletPrecedence,
-    theme,
-    walletModalAttachments,
-    telegramConfig,
-    setShowWalletModal,
-    setTransactionSimulation,
-  } = useUnifiedWalletContext();
+  const { walletPrecedence, theme, walletModalAttachments } = useUnifiedWalletContext();
+  const { telegramConfig } = useTelegramWalletContext();
   const [isOpen, onToggle] = useToggle(false);
   const previouslyConnected = usePreviouslyConnected();
 
@@ -307,7 +295,7 @@ const UnifiedWalletModal: React.FC<IUnifiedWalletModal> = ({ onClose }) => {
     if (telegramConfig) {
       return {
         highlightedBy: 'TopAndRecommended',
-        highlight: [getOrCreateTelegramAdapter(telegramConfig, setTransactionSimulation, setShowWalletModal)],
+        highlight: [wallets[0].adapter],
         others: [],
       };
     }

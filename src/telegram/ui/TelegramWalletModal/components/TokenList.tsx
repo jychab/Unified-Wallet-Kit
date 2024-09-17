@@ -1,6 +1,6 @@
-import { NATIVE_MINT } from '@solana/spl-token';
 import { FC, useEffect, useState } from 'react';
 import { IStandardStyle, useUnifiedWallet, useUnifiedWalletContext } from 'src/contexts/UnifiedWalletContext';
+import { useTelegramWalletContext } from 'src/telegram/contexts/TelegramWalletContext';
 import { cache, getAssetsByOwner } from 'src/telegram/helpers';
 import tw from 'twin.macro';
 import { ITelegramWalletFlow } from '..';
@@ -42,9 +42,9 @@ const styles: IStandardStyle = {
     jupiter: [tw`text-white`],
   },
 };
-
+export const NATIVE_SOL = 'native_sol';
 const nativeToken = (result: any) => ({
-  id: NATIVE_MINT.toBase58(),
+  id: NATIVE_SOL,
   token_info: {
     balance: result.nativeBalance?.lamports || 0,
     decimals: 9,
@@ -148,7 +148,9 @@ export const TokenList: FC<{
   setSelectedToken: (selectedToken: any | undefined) => void;
   setFlow: (flow: ITelegramWalletFlow) => void;
 }> = ({ setFlow, setSelectedToken, showSummary = true, showPrices = true, showSearchBar = false }) => {
-  const { telegramConfig, theme } = useUnifiedWalletContext();
+  const { theme } = useUnifiedWalletContext();
+
+  const { telegramConfig } = useTelegramWalletContext();
   const [tokens, setTokens] = useState<any[]>([]);
   const [filtered, setFiltered] = useState<any[]>([]);
   const { publicKey } = useUnifiedWallet();

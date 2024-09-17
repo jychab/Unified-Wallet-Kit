@@ -1,7 +1,7 @@
 import type { Adapter, SendTransactionOptions, WalletName } from '@solana/wallet-adapter-base';
 import type { WalletContextState } from '@solana/wallet-adapter-react';
 import type { Connection, Transaction, VersionedTransaction } from '@solana/web3.js';
-import { createContext, Dispatch, SetStateAction, useContext } from 'react';
+import { createContext, useContext } from 'react';
 import { TwStyle } from 'twin.macro';
 import { IUnifiedWalletConfig } from './WalletConnectionProvider';
 
@@ -10,20 +10,9 @@ export type IUnifiedTheme = 'light' | 'dark' | 'jupiter';
 export type IStandardStyle = Record<string, { [key in IUnifiedTheme]: TwStyle[] }>;
 
 export interface IUnifiedWalletContext {
-  telegramConfig: IUnifiedWalletConfig['telegramConfig'];
   walletPrecedence: IUnifiedWalletConfig['walletPrecedence'];
   handleConnectClick: (event: React.MouseEvent<HTMLElement, globalThis.MouseEvent>, wallet: Adapter) => Promise<void>;
   showModal: boolean;
-  showWalletModal: boolean;
-  simulatedTransaction:
-    | { transaction: Transaction | VersionedTransaction; onApproval: () => void; onCancel: () => void }
-    | undefined;
-  setTransactionSimulation: Dispatch<
-    SetStateAction<
-      { transaction: Transaction | VersionedTransaction; onApproval: () => void; onCancel: () => void } | undefined
-    >
-  >;
-  setShowWalletModal: (showWalletModal: boolean) => void;
   setShowModal: (showModal: boolean) => void;
   walletlistExplanation: IUnifiedWalletConfig['walletlistExplanation'];
   theme: IUnifiedTheme;
@@ -32,14 +21,9 @@ export interface IUnifiedWalletContext {
 }
 
 export const UnifiedWalletContext = createContext<IUnifiedWalletContext>({
-  telegramConfig: undefined,
   walletPrecedence: [],
   handleConnectClick: async (event: React.MouseEvent<HTMLElement, globalThis.MouseEvent>, wallet: Adapter) => {},
   showModal: false,
-  showWalletModal: false,
-  simulatedTransaction: undefined,
-  setTransactionSimulation: () => {},
-  setShowWalletModal: (showWalletModal: boolean) => {},
   setShowModal: (showModal: boolean) => {},
   walletlistExplanation: undefined,
   theme: 'light',

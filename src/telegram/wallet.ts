@@ -1,7 +1,7 @@
 import { EventEmitter } from '@solana/wallet-adapter-base';
 import { PublicKey, SendOptions, Transaction, TransactionSignature, VersionedTransaction } from '@solana/web3.js';
 import { retrieveLaunchParams } from '@telegram-apps/sdk-react';
-import { TelegramConfig } from 'src/contexts/WalletConnectionProvider';
+import { ITelegramConfig } from 'src/contexts/WalletConnectionProvider';
 import { signMessageOnBackend, signTransactionOnBackend, verifyAndGetPublicKey } from './backend';
 import { sendTransactionToBlockchain } from './helpers';
 
@@ -30,10 +30,10 @@ export class TelegramWalletImpl extends EventEmitter<TelegramWalletEvents> imple
   publicKey?: PublicKey;
   isTelegram = true;
   isConnected = false;
-  config: TelegramConfig;
+  config: ITelegramConfig;
   simulationCallback: (transaction: Transaction | VersionedTransaction) => Promise<boolean>;
   constructor(
-    config: TelegramConfig,
+    config: ITelegramConfig,
     simulationCallback: (transaction: Transaction | VersionedTransaction) => Promise<boolean>,
   ) {
     super();

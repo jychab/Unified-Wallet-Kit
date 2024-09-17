@@ -3,6 +3,7 @@ import tw from 'twin.macro';
 
 import { retrieveLaunchParams } from '@telegram-apps/sdk-react';
 import { IStandardStyle, useUnifiedWallet, useUnifiedWalletContext } from 'src/contexts/UnifiedWalletContext';
+import { useTelegramWalletContext } from 'src/telegram/contexts/TelegramWalletContext';
 import WalletIcon from '../icons/WalletIcon';
 
 const styles: IStandardStyle = {
@@ -18,7 +19,8 @@ export const TelegramWalletButton: React.FC<{
   buttonClassName?: string;
   currentUserClassName?: string;
 }> = ({ overrideContent, buttonClassName: className }) => {
-  const { setShowWalletModal, theme, telegramConfig } = useUnifiedWalletContext();
+  const { theme } = useUnifiedWalletContext();
+  const { telegramConfig, setShowWalletModal } = useTelegramWalletContext();
   const { wallet, publicKey } = useUnifiedWallet();
   const [userName, setUsername] = useState('');
   useEffect(() => {

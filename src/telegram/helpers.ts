@@ -11,7 +11,7 @@ import {
   VersionedTransaction,
 } from '@solana/web3.js';
 import { Dispatch, SetStateAction } from 'react';
-import { TelegramConfig } from 'src/contexts/WalletConnectionProvider';
+import { ITelegramConfig } from 'src/contexts/WalletConnectionProvider';
 import { TelegramWalletAdapter } from './adapter';
 import { PersistentCache } from './cache';
 import { TelegramWallet, TelegramWalletImpl } from './wallet';
@@ -20,20 +20,14 @@ export const cache = new PersistentCache(60 * 60 * 1000); // 1hr TTL
 
 // Factory function to create a wallet object
 export function getOrCreateTelegramWallet(
-  config: TelegramConfig,
+  config: ITelegramConfig,
   simulationCallback: (transaction: Transaction | VersionedTransaction) => Promise<boolean>,
 ): TelegramWallet {
-  const key = config.botUsername + '/wallet';
-  const cachedWallet = cache.get(key) ? cache.get(key) : null;
-  if (cachedWallet) {
-    // Use saved public key to initialize wallet (this will depend on your wallet implementation)
-    return cachedWallet; // Modify as needed
-  }
   return new TelegramWalletImpl(config, simulationCallback);
 }
 
 export function getOrCreateTelegramAdapter(
-  config: TelegramConfig,
+  config: ITelegramConfig,
   setTransactionSimulation: Dispatch<
     SetStateAction<
       { transaction: Transaction | VersionedTransaction; onApproval: () => void; onCancel: () => void } | undefined
@@ -41,32 +35,41 @@ export function getOrCreateTelegramAdapter(
   >,
   setShowWalletModal: (showWalletModal: boolean) => void,
 ) {
-  const key = config.botUsername + '/adapter';
-  const cachedAdapter = cache.get(key) ? cache.get(key) : null;
-  if (cachedAdapter) {
-    return cachedAdapter; // Modify as needed
-  }
   const simulationCallback = (x: Transaction | VersionedTransaction) => {
     return new Promise((resolve: (value: boolean) => any) => {
+      let timeoutId;
+
       const approveTransaction = () => {
-        setShowWalletModal(false); // Close modal
+        console.log('Transaction approved by user');
+        clearTimeout(timeoutId);
+        setTransactionSimulation(undefined);
         resolve(true); // User approved
       };
       const cancelTransaction = () => {
+        console.log('Transaction canceled by user');
+        clearTimeout(timeoutId);
         setShowWalletModal(false); // Close modal
+        setTransactionSimulation(undefined);
         resolve(false); // User canceled
       };
+
+      console.log('Setting transaction simulation and opening modal');
       setShowWalletModal(true);
       setTransactionSimulation({ transaction: x, onApproval: approveTransaction, onCancel: cancelTransaction });
+      // Set up a timeout to automatically resolve after 1 minute (60000ms)
+      timeoutId = setTimeout(() => {
+        console.log('Transaction timed out after 1 minute');
+        setShowWalletModal(false); // Close modal due to timeout
+        resolve(false); // Automatically cancel the transaction due to timeout
+      }, 60000); // 1 minute timeout
     });
   };
   const adapter = new TelegramWalletAdapter(config, simulationCallback);
-  cache.set(key, adapter);
   return adapter;
 }
 // Utility function to save wallet state to local storage
 
-export function saveWalletState(config: TelegramConfig, wallet: TelegramWallet | null) {
+export function saveWalletState(config: ITelegramConfig, wallet: TelegramWallet | null) {
   const key = config.botUsername + '/wallet';
   return wallet ? cache.set(key, JSON.stringify(wallet)) : cache.clear(key);
 }
@@ -153,8 +156,9 @@ export async function buildAndSendTransaction(
       payerKey: payer,
     }).compileToV0Message(lookupTables),
   );
+  console.log('Versioned Tx:', tx);
   tx = await signTransaction(tx);
-
+  console.log('test');
   try {
     const timeout = 60000;
     const startTime = Date.now();

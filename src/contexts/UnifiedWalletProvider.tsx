@@ -1,12 +1,13 @@
 import { PropsWithChildren, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useWallet, Wallet, WalletContextState } from '@solana/wallet-adapter-react';
-import { PublicKey, Transaction, VersionedTransaction } from '@solana/web3.js';
+import { PublicKey } from '@solana/web3.js';
 
 import { Adapter, WalletReadyState } from '@solana/wallet-adapter-base';
 import { usePrevious } from 'react-use';
 import WalletConnectionProvider, { IUnifiedWalletConfig } from './WalletConnectionProvider';
 
+import { useTelegramWalletContext } from 'src/telegram/contexts/TelegramWalletContext';
 import { TelegramWalletModal } from 'src/telegram/ui/TelegramWalletModal';
 import ModalDialog from '../components/ModalDialog';
 import UnifiedWalletModal from '../components/UnifiedWalletModal';
@@ -48,6 +49,7 @@ const UnifiedWalletContextProvider: React.FC<
     config: IUnifiedWalletConfig;
   } & PropsWithChildren
 > = ({ config, children }) => {
+  const { setShowWalletModal, showWalletModal } = useTelegramWalletContext();
   const { publicKey, wallet, select, connect } = useUnifiedWallet();
   const previousPublicKey = usePrevious<PublicKey | null>(publicKey);
   const previousWallet = usePrevious<Wallet | null>(wallet);
@@ -65,15 +67,6 @@ const UnifiedWalletContextProvider: React.FC<
   }, [nonAutoConnectAttempt, wallet?.adapter.name]);
 
   const [showModal, setShowModal] = useState(false);
-  const [showWalletModal, setShowWalletModal] = useState(false);
-  const [simulatedTransaction, setTransactionSimulation] = useState<
-    | {
-        transaction: Transaction | VersionedTransaction;
-        onApproval: () => void;
-        onCancel: () => void;
-      }
-    | undefined
-  >();
 
   const handleConnectClick = useCallback(
     async (event: React.MouseEvent<HTMLElement, globalThis.MouseEvent>, adapter: Adapter) => {
@@ -163,15 +156,10 @@ const UnifiedWalletContextProvider: React.FC<
   return (
     <UnifiedWalletContext.Provider
       value={{
-        telegramConfig: config.telegramConfig,
         walletPrecedence: config.walletPrecedence || [],
         handleConnectClick,
         showModal,
         setShowModal,
-        showWalletModal,
-        setShowWalletModal,
-        simulatedTransaction,
-        setTransactionSimulation,
         walletlistExplanation: config.walletlistExplanation,
         theme: config.theme || 'light',
         walletAttachments: config.walletAttachments || {},

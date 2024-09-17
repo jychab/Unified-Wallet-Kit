@@ -1,5 +1,6 @@
 import { FC } from 'react';
 import { IStandardStyle, useUnifiedWalletContext } from 'src/contexts/UnifiedWalletContext';
+import { useTelegramWalletContext } from 'src/telegram/contexts/TelegramWalletContext';
 import tw from 'twin.macro';
 
 const styles: IStandardStyle = {
@@ -41,14 +42,20 @@ const styles: IStandardStyle = {
 };
 
 export const TransactionSimulationPage: FC = () => {
-  const { simulatedTransaction, theme } = useUnifiedWalletContext();
+  const { theme } = useUnifiedWalletContext();
+
+  const { simulatedTransaction } = useTelegramWalletContext();
 
   return (
     <div tw="flex flex-col items-center justify-center gap-4 pt-4">
       <div tw="flex justify-between gap-4 mt-8 items-center w-full">
         <button
           type="button"
-          onClick={simulatedTransaction && simulatedTransaction.onCancel}
+          onClick={() => {
+            if (simulatedTransaction) {
+              simulatedTransaction.onCancel();
+            }
+          }}
           css={[
             tw`text-white font-semibold text-base w-full rounded-lg border border-white/10 py-4 leading-none`,
             styles.walletButton[theme],
@@ -58,7 +65,11 @@ export const TransactionSimulationPage: FC = () => {
         </button>
         <button
           type="button"
-          onClick={simulatedTransaction && simulatedTransaction.onApproval}
+          onClick={() => {
+            if (simulatedTransaction) {
+              simulatedTransaction.onApproval();
+            }
+          }}
           css={[
             tw`text-white font-semibold text-base w-full rounded-lg border border-white/10 py-4 leading-none`,
             styles.walletButton[theme],

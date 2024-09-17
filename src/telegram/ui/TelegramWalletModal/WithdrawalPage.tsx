@@ -1,11 +1,13 @@
 import { ASSOCIATED_TOKEN_PROGRAM_ID, Token } from '@solana/spl-token';
-import { Connection, PublicKey } from '@solana/web3.js';
+import { Connection, PublicKey, SystemProgram } from '@solana/web3.js';
 import { FC, FormEvent, useState } from 'react';
 import { IStandardStyle, useUnifiedWallet, useUnifiedWalletContext } from 'src/contexts/UnifiedWalletContext';
+import { useTelegramWalletContext } from 'src/telegram/contexts/TelegramWalletContext';
 import { buildAndSendTransaction } from 'src/telegram/helpers';
 import tw from 'twin.macro';
 import { ITelegramWalletFlow } from '.';
 import LeftArrowIcon from '../icons/LeftArrowIcon';
+import { NATIVE_SOL } from './components/TokenList';
 
 const styles: IStandardStyle = {
   container: {
@@ -50,8 +52,10 @@ export const WithdrawalPage: FC<{ token: any; setFlow: (flow: ITelegramWalletFlo
   setFlow,
 }) => {
   const { publicKey, signTransaction } = useUnifiedWallet();
+
+  const { telegramConfig } = useTelegramWalletContext();
   const [loading, setLoading] = useState(false);
-  const { theme, telegramConfig } = useUnifiedWalletContext();
+  const { theme } = useUnifiedWalletContext();
 
   const [recipient, setRecipient] = useState('');
   const [amount, setAmount] = useState('');
@@ -72,49 +76,56 @@ export const WithdrawalPage: FC<{ token: any; setFlow: (flow: ITelegramWalletFlo
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (
-      !telegramConfig ||
-      !publicKey ||
-      !token.token_info?.token_program ||
-      !token.token_info.decimals ||
-      !signTransaction
-    ) {
+    if (!telegramConfig || !publicKey || !signTransaction) {
       return;
     }
-
     try {
       setLoading(true);
-      const tokenProgram = new PublicKey(token.token_info.token_program);
-      const source = await Token.getAssociatedTokenAddress(
-        ASSOCIATED_TOKEN_PROGRAM_ID,
-        tokenProgram,
-        new PublicKey(token.id),
-        publicKey,
-        false,
-      );
-      const destination = await Token.getAssociatedTokenAddress(
-        ASSOCIATED_TOKEN_PROGRAM_ID,
-        tokenProgram,
-        new PublicKey(token.id),
-        new PublicKey(recipient),
-        true,
-      );
-      const transferIx = Token.createTransferCheckedInstruction(
-        tokenProgram,
-        source,
-        new PublicKey(token.id),
-        destination,
-        publicKey,
-        [],
-        parseInt(amount),
-        token.token_info.decimals,
-      );
-      await buildAndSendTransaction(
-        [transferIx],
-        publicKey,
-        signTransaction,
-        new Connection(telegramConfig.rpcEndpoint),
-      );
+      if (token.id == NATIVE_SOL) {
+        const transferIx = SystemProgram.transfer({
+          fromPubkey: publicKey,
+          toPubkey: new PublicKey(recipient),
+          lamports: parseInt(amount) * 10 ** token.token_info.decimals,
+        });
+        await buildAndSendTransaction(
+          [transferIx],
+          publicKey,
+          signTransaction,
+          new Connection(telegramConfig.rpcEndpoint),
+        );
+      } else {
+        const tokenProgram = new PublicKey(token.token_info.token_program);
+        const source = await Token.getAssociatedTokenAddress(
+          ASSOCIATED_TOKEN_PROGRAM_ID,
+          tokenProgram,
+          new PublicKey(token.id),
+          publicKey,
+          false,
+        );
+        const destination = await Token.getAssociatedTokenAddress(
+          ASSOCIATED_TOKEN_PROGRAM_ID,
+          tokenProgram,
+          new PublicKey(token.id),
+          new PublicKey(recipient),
+          true,
+        );
+        const transferIx = Token.createTransferCheckedInstruction(
+          tokenProgram,
+          source,
+          new PublicKey(token.id),
+          destination,
+          publicKey,
+          [],
+          parseInt(amount) * 10 ** token.token_info.decimals,
+          token.token_info.decimals,
+        );
+        await buildAndSendTransaction(
+          [transferIx],
+          publicKey,
+          signTransaction,
+          new Connection(telegramConfig.rpcEndpoint),
+        );
+      }
     } catch (e) {
       console.log(e);
     } finally {
@@ -206,7 +217,7 @@ export const WithdrawalPage: FC<{ token: any; setFlow: (flow: ITelegramWalletFlo
           {`Back`}
         </button>
         <button
-          disabled={!amount || !recipient || loading}
+          disabled={!amount || !recipient}
           type="submit"
           css={[
             tw`text-white font-semibold text-base w-full rounded-lg border border-white/10 py-4 leading-none`,

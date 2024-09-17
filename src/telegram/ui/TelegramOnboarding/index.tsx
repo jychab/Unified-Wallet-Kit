@@ -1,6 +1,7 @@
 import { retrieveLaunchParams } from '@telegram-apps/sdk-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { createPublicKey, verifyAndGetPublicKey } from 'src/telegram/backend';
+import { useTelegramWalletContext } from 'src/telegram/contexts/TelegramWalletContext';
 import { getOrCreateTelegramAdapter } from 'src/telegram/helpers';
 import tw from 'twin.macro';
 import { useTranslation } from '../../../contexts/TranslationProvider';
@@ -35,7 +36,9 @@ export const TelegramOnboardingIntro: React.FC<{
   flow: ITelegramOnboardingFlow;
   setFlow: (flow: ITelegramOnboardingFlow) => void;
 }> = ({ flow, setFlow, botUsername }) => {
-  const { theme, telegramConfig } = useUnifiedWalletContext();
+  const { theme } = useUnifiedWalletContext();
+
+  const { telegramConfig } = useTelegramWalletContext();
   const { t } = useTranslation();
 
   const [loading, setLoading] = useState(false);
@@ -146,8 +149,9 @@ export const TelegramOnboardingFlow = ({
   botUsername: string | undefined;
   onClose: () => void;
 }) => {
-  const { handleConnectClick, telegramConfig, setShowWalletModal, setTransactionSimulation } =
-    useUnifiedWalletContext();
+  const { handleConnectClick } = useUnifiedWalletContext();
+
+  const { telegramConfig, setShowWalletModal, setTransactionSimulation } = useTelegramWalletContext();
   const [flow, setFlow] = useState<ITelegramOnboardingFlow>('Onboarding');
   const [animateOut, setAnimateOut] = useState(false);
 
