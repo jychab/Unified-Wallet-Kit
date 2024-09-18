@@ -1,9 +1,7 @@
-import { useRef, useState } from 'react';
-import { IStandardStyle, useUnifiedWallet, useUnifiedWalletContext } from 'src/contexts/UnifiedWalletContext';
-import { useOutsideClick } from 'src/misc/utils';
+import { useCallback, useRef, useState } from 'react';
+import { IStandardStyle, useUnifiedWalletContext } from 'src/contexts/UnifiedWalletContext';
 import { useTelegramWalletContext } from 'src/telegram/contexts/TelegramWalletContext';
 import tw from 'twin.macro';
-import { TelegramOnboardingFlow } from '../TelegramOnboarding';
 import { Header } from './components/Header';
 import { DepositPage } from './DepositPage';
 import { MainPage } from './MainPage';
@@ -28,40 +26,51 @@ export type ITelegramWalletFlow = 'Main' | 'Deposit' | 'TokenList' | 'Withdrawal
 
 export const TelegramWalletModal: React.FC<ITelegramWalletModal> = ({ onClose }) => {
   const { theme } = useUnifiedWalletContext();
-  const { telegramConfig, simulatedTransaction, txSig } = useTelegramWalletContext();
-  const { publicKey } = useUnifiedWallet();
-  const contentRef = useRef<HTMLDivElement>(null);
+  const { simulatedTransaction, txSig } = useTelegramWalletContext();
   const [flow, setFlow] = useState<ITelegramWalletFlow>('Main');
-  useOutsideClick(contentRef, onClose);
+  const [animateIn, setAnimateIn] = useState(false);
   const [selectedToken, setSelectedToken] = useState<any>();
+  const contentRef = useRef<HTMLDivElement>(null);
 
-  if (!publicKey && telegramConfig && !simulatedTransaction) {
-    return null;
-  }
+  const setFlowAnimated = useCallback((flow: ITelegramWalletFlow) => {
+    setFlow(flow);
+    contentRef.current?.scrollTo(0, 0); // Scroll to top when flow changes
+    setAnimateIn(true);
+  }, []);
+
+  const handleAnimationEnd = () => {
+    setAnimateIn(false); // Stop animation when it completes
+  };
+
+  const flowComponents = {
+    Main: <MainPage setFlow={setFlowAnimated} setSelectedToken={setSelectedToken} />,
+    Deposit: <DepositPage setFlow={setFlowAnimated} />,
+    Withdrawal: selectedToken && <WithdrawalPage setFlow={setFlowAnimated} token={selectedToken} />,
+    TokenList: <TokenListPage setFlow={setFlowAnimated} setSelectedToken={setSelectedToken} />,
+  };
 
   return (
     <div
+      id="telegram_wallet_modal"
       ref={contentRef}
       css={[
-        tw`max-w-md p-4 w-full relative flex flex-col overflow-hidden rounded-xl max-h-[90vh] lg:max-h-[576px] transition-height duration-500 ease-in-out`,
+        tw`p-4 w-full flex flex-col rounded-xl max-h-[90vh] lg:max-h-[576px] max-w-md items-center justify-center`,
         styles.container[theme],
       ]}
+      onAnimationEnd={handleAnimationEnd}
+      className="hideScrollbar"
     >
-      {' '}
       {txSig ? (
-        <TransactionConfirmationPage setFlow={setFlow} />
+        <TransactionConfirmationPage setFlow={setFlowAnimated} />
       ) : simulatedTransaction ? (
         <TransactionSimulationPage />
-      ) : !publicKey ? (
-        telegramConfig && <TelegramOnboardingFlow botUsername={telegramConfig.botUsername} onClose={onClose} />
       ) : (
-        <div>
+        <div tw="w-full">
           <Header onClose={onClose} />
           <div tw="border-t-[1px] border-white/10" />
-          {flow === 'Main' && <MainPage setFlow={setFlow} setSelectedToken={setSelectedToken} />}
-          {flow === 'Deposit' && <DepositPage setFlow={setFlow} />}
-          {flow === 'Withdrawal' && selectedToken && <WithdrawalPage setFlow={setFlow} token={selectedToken} />}
-          {flow === 'TokenList' && <TokenListPage setFlow={setFlow} setSelectedToken={setSelectedToken} />}
+          <div css={[tw`w-full overflow-y-scroll`, animateIn && tw`animate-fade-right duration-500`]}>
+            {flowComponents[flow]}
+          </div>
         </div>
       )}
     </div>

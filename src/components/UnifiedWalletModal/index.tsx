@@ -85,7 +85,7 @@ const ListOfWallets: React.FC<{
 }> = ({ list, onToggle, isOpen }) => {
   const { handleConnectClick, walletlistExplanation, walletAttachments, theme, setShowModal } =
     useUnifiedWalletContext();
-  const { telegramConfig, setShowWalletModal } = useTelegramWalletContext();
+  const { telegramConfig, setShowOnboardingModal, setShowWalletModal } = useTelegramWalletContext();
   const { t } = useTranslation();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showNotInstalled, setShowNotInstalled] = useState<Adapter | false>(false);
@@ -95,7 +95,8 @@ const ListOfWallets: React.FC<{
       if (adapter.readyState === WalletReadyState.NotDetected) {
         if (telegramConfig && adapter.name == telegramConfig?.botUsername) {
           setShowModal(false);
-          setShowWalletModal(true);
+          setShowOnboardingModal(true);
+          setShowWalletModal(false);
         } else {
           setShowNotInstalled(adapter);
         }

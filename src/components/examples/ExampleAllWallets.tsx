@@ -18,7 +18,7 @@ import WalletNotification from './WalletNotification';
 
 const ExampleAllWallets: React.FC<{ theme: IUnifiedTheme; lang: AllLanguage }> = ({ theme, lang }) => {
   const config: IUnifiedWalletConfig = {
-    autoConnect: false,
+    autoConnect: true,
     env: 'mainnet-beta' as Cluster,
     metadata: {
       name: 'UnifiedWallet',

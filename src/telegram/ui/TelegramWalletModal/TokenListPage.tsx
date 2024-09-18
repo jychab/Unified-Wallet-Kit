@@ -29,7 +29,9 @@ export const TokenListPage: FC<{
       />
       <button
         type="button"
-        onClick={() => setFlow('Main')}
+        onClick={() => {
+          setFlow('Main');
+        }}
         css={[
           tw`text-white font-semibold text-base w-full rounded-lg border border-white/10 p-4 leading-none`,
           styles.walletButton[theme],

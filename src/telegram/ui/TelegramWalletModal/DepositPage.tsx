@@ -43,7 +43,9 @@ const styles: IStandardStyle = {
   },
 };
 
-export const DepositPage: FC<{ setFlow: (flow: ITelegramWalletFlow) => void }> = ({ setFlow }) => {
+export const DepositPage: FC<{
+  setFlow: (flow: ITelegramWalletFlow) => void;
+}> = ({ setFlow }) => {
   const { theme } = useUnifiedWalletContext();
   const { publicKey } = useUnifiedWallet();
   return (
@@ -52,7 +54,9 @@ export const DepositPage: FC<{ setFlow: (flow: ITelegramWalletFlow) => void }> =
         <button
           type="button"
           css={[tw`text-white/50 font-semibold`, styles.subtitle[theme]]}
-          onClick={() => setFlow('Main')}
+          onClick={() => {
+            setFlow('Main');
+          }}
         >
           <LeftArrowIcon width={20} height={20} />
         </button>

@@ -21,7 +21,9 @@ export const cache = new PersistentCache(60 * 60 * 1000); // 1hr TTL
 // Factory function to create a wallet object
 export function getOrCreateTelegramWallet(
   config: ITelegramConfig,
-  simulationCallback: (transaction: Transaction | VersionedTransaction) => Promise<boolean>,
+  simulationCallback: (
+    transaction: Transaction | VersionedTransaction,
+  ) => Promise<{ result: boolean; onCompletion?: () => void; onError?: (error: string) => void }>,
 ): TelegramWallet {
   return new TelegramWalletImpl(config, simulationCallback);
 }
@@ -32,6 +34,7 @@ export function getOrCreateTelegramAdapter(
     SetStateAction<
       | {
           transaction: Transaction | VersionedTransaction;
+          error?: string;
           onApproval: () => void;
           onCancel: () => void;
         }
@@ -41,38 +44,47 @@ export function getOrCreateTelegramAdapter(
   setShowWalletModal: (showWalletModal: boolean) => void,
 ) {
   const simulationCallback = (x: Transaction | VersionedTransaction) => {
-    return new Promise((resolve: (value: boolean) => any) => {
-      let timeoutId;
+    return new Promise(
+      (resolve: (value: { result: boolean; onCompletion?: () => void; onError?: (error: string) => void }) => any) => {
+        let timeoutId;
 
-      const approveTransaction = () => {
-        console.log('Transaction approved by user');
-        clearTimeout(timeoutId);
-        setTransactionSimulation(undefined);
-        setShowWalletModal(false); // Close modal
-        resolve(true); // User approved
-      };
-      const cancelTransaction = () => {
-        console.log('Transaction canceled by user');
-        clearTimeout(timeoutId);
-        setShowWalletModal(false); // Close modal
-        setTransactionSimulation(undefined);
-        resolve(false); // User approved
-      };
+        const onCompletion = () => {
+          console.log('Transaction is signed');
+          setTransactionSimulation(undefined);
+          setShowWalletModal(false); // Close modal
+        };
+        const onError = (error: string) => {
+          console.log('Error Occurred while signing transaction');
+          setTransactionSimulation((prev) => (prev ? { ...prev, error } : undefined));
+        };
+        const approveTransaction = () => {
+          console.log('Transaction approved by user');
+          clearTimeout(timeoutId);
+          resolve({ result: true, onCompletion, onError }); // User approved
+        };
+        const cancelTransaction = () => {
+          console.log('Transaction canceled by user');
+          clearTimeout(timeoutId);
+          setShowWalletModal(false); // Close modal
+          setTransactionSimulation(undefined);
+          resolve({ result: false, onCompletion, onError }); // User approved
+        };
 
-      console.log('Setting transaction simulation and opening modal');
-      setShowWalletModal(true);
-      setTransactionSimulation({
-        transaction: x,
-        onApproval: approveTransaction,
-        onCancel: cancelTransaction,
-      });
-      // Set up a timeout to automatically resolve after 1 minute (60000ms)
-      timeoutId = setTimeout(() => {
-        console.log('Transaction timed out after 1 minute');
-        setShowWalletModal(false); // Close modal due to timeout
-        resolve(false); // Automatically cancel the transaction due to timeout
-      }, 60000); // 1 minute timeout
-    });
+        console.log('Setting transaction simulation and opening modal');
+        setShowWalletModal(true);
+        setTransactionSimulation({
+          transaction: x,
+          onApproval: approveTransaction,
+          onCancel: cancelTransaction,
+        });
+        // Set up a timeout to automatically resolve after 1 minute (60000ms)
+        timeoutId = setTimeout(() => {
+          console.log('Transaction timed out after 1 minute');
+          setShowWalletModal(false); // Close modal due to timeout
+          resolve({ result: false, onCompletion, onError }); // User approved
+        }, 60000); // 1 minute timeout
+      },
+    );
   };
   return new TelegramWalletAdapter(config, simulationCallback);
 }

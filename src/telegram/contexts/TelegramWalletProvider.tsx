@@ -17,8 +17,14 @@ const TelegramWalletContextProvider: React.FC<
 > = ({ config, children }) => {
   const [txSig, setTxSig] = useState<string>();
   const [showWalletModal, setShowWalletModal] = useState(false);
+  const [showOnboardingModal, setShowOnboardingModal] = useState(false);
   const [simulatedTransaction, setTransactionSimulation] = useState<
-    { transaction: Transaction | VersionedTransaction; onApproval: () => void; onCancel: () => void } | undefined
+    | {
+        transaction: Transaction | VersionedTransaction;
+        onApproval: () => void;
+        onCancel: () => void;
+      }
+    | undefined
   >(undefined);
 
   return (
@@ -29,6 +35,8 @@ const TelegramWalletContextProvider: React.FC<
         telegramConfig: config,
         showWalletModal,
         setShowWalletModal,
+        showOnboardingModal,
+        setShowOnboardingModal,
         simulatedTransaction,
         setTransactionSimulation,
       }}

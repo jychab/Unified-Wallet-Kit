@@ -7,6 +7,7 @@ import { buildAndSignTransaction, sendAndConfirmTransaction } from 'src/telegram
 import tw from 'twin.macro';
 import { ITelegramWalletFlow } from '.';
 import LeftArrowIcon from '../icons/LeftArrowIcon';
+import { LoadingSpinner } from './components/LoadingSpinner';
 import { NATIVE_SOL } from './components/TokenList';
 
 const styles: IStandardStyle = {
@@ -47,16 +48,16 @@ const styles: IStandardStyle = {
   },
 };
 
-export const WithdrawalPage: FC<{ token: any; setFlow: (flow: ITelegramWalletFlow) => void }> = ({
-  token,
-  setFlow,
-}) => {
+export const WithdrawalPage: FC<{
+  token: any;
+  setFlow: (flow: ITelegramWalletFlow) => void;
+}> = ({ token, setFlow }) => {
   const { publicKey, signTransaction } = useUnifiedWallet();
   const { telegramConfig, setShowWalletModal, setTxSig } = useTelegramWalletContext();
   const { theme } = useUnifiedWalletContext();
-
   const [recipient, setRecipient] = useState('');
   const [amount, setAmount] = useState('');
+  const [loading, setLoading] = useState(false);
   const handleInput = (e: React.FormEvent<HTMLInputElement>) => {
     let value = e.currentTarget.value;
 
@@ -78,6 +79,7 @@ export const WithdrawalPage: FC<{ token: any; setFlow: (flow: ITelegramWalletFlo
       return;
     }
     try {
+      setLoading(true);
       let tx;
       const connection = new Connection(telegramConfig.rpcEndpoint);
       if (token.id == NATIVE_SOL) {
@@ -124,6 +126,8 @@ export const WithdrawalPage: FC<{ token: any; setFlow: (flow: ITelegramWalletFlo
       setTxSig(txSig);
     } catch (e) {
       console.log(e);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -132,8 +136,11 @@ export const WithdrawalPage: FC<{ token: any; setFlow: (flow: ITelegramWalletFlo
       <div tw="flex w-full justify-between items-center">
         <button
           type="button"
+          disabled={loading}
           css={[tw`text-white/50 font-semibold`, styles.subtitle[theme]]}
-          onClick={() => setFlow('Main')}
+          onClick={() => {
+            setFlow('Main');
+          }}
         >
           <LeftArrowIcon width={20} height={20} />
         </button>
@@ -175,9 +182,8 @@ export const WithdrawalPage: FC<{ token: any; setFlow: (flow: ITelegramWalletFlo
         <input
           required
           css={[tw`text-base w-full p-2 focus-within:outline-none border-none`, styles.container[theme]]}
-          type="text"
+          type="number"
           value={amount}
-          inputMode="numeric"
           placeholder="Amount"
           onChange={(e) => setAmount(e.target.value)} // Handle input change
           onInput={handleInput} // Ensure only numeric input is allowed
@@ -201,7 +207,10 @@ export const WithdrawalPage: FC<{ token: any; setFlow: (flow: ITelegramWalletFlo
       <div tw="flex justify-between gap-4 mt-8 items-center w-full">
         <button
           type="button"
-          onClick={() => setFlow('Main')}
+          disabled={loading}
+          onClick={() => {
+            setFlow('Main');
+          }}
           css={[
             tw`text-white font-semibold text-base w-full rounded-lg border border-white/10 py-4 leading-none`,
 
@@ -211,15 +220,16 @@ export const WithdrawalPage: FC<{ token: any; setFlow: (flow: ITelegramWalletFlo
           {`Back`}
         </button>
         <button
-          disabled={!amount || !recipient}
+          disabled={!amount || !recipient || loading}
           type="submit"
           css={[
-            tw`text-white font-semibold text-base w-full rounded-lg border border-white/10 py-4 leading-none`,
+            tw`text-white font-semibold text-base w-full rounded-lg border border-white/10 justify-center items-center flex leading-none`,
             (!amount || !recipient) && tw`opacity-50 cursor-not-allowed`,
+            loading ? tw`py-2` : tw`py-4`,
             styles.walletButton[theme],
           ]}
         >
-          {'Next'}
+          {loading ? <LoadingSpinner twStyle={tw`w-8 h-8 animate-spin text-gray-600 fill-blue-600`} /> : 'Next'}
         </button>
       </div>
     </form>

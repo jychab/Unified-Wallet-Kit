@@ -1,3 +1,4 @@
+import { PublicKey } from '@solana/web3.js';
 import { FC, useEffect, useState } from 'react';
 import { IStandardStyle, useUnifiedWallet, useUnifiedWalletContext } from 'src/contexts/UnifiedWalletContext';
 import { useTelegramWalletContext } from 'src/telegram/contexts/TelegramWalletContext';
@@ -18,8 +19,8 @@ const styles: IStandardStyle = {
   },
   walletItem: {
     light: [tw`bg-gray-50 hover:shadow-lg hover:border-black/10`],
-    dark: [tw`hover:shadow-2xl hover:bg-white/10`],
-    jupiter: [tw`hover:shadow-2xl hover:bg-white/10`],
+    dark: [tw`hover:shadow-lg hover:bg-white/10`],
+    jupiter: [tw`hover:shadow-lg hover:bg-white/10`],
   },
   walletButton: {
     light: [tw`bg-[#F9FAFB] hover:bg-black/5`],
@@ -103,7 +104,7 @@ const TokenCard: FC<{
           <span css={styles.text[theme]} tw="text-base font-bold">
             {token.content?.metadata.name || 'Unknown Token'}
           </span>
-          <span css={styles.subtitle[theme]} tw="text-sm truncate w-full max-w-[180px]">
+          <span css={styles.subtitle[theme]} tw="text-sm text-left truncate w-full max-w-[180px]">
             {`${(token.token_info?.balance || 0) / 10 ** (token.token_info?.decimals || 0)} ${token.content?.metadata.symbol}`}
           </span>
         </div>
@@ -141,6 +142,8 @@ const Summary: FC<{ total: number; setFlow: (flow: ITelegramWalletFlow) => void 
   );
 };
 
+export const cacheKey = (publicKey: PublicKey) => `assets-${publicKey?.toBase58()}`;
+
 export const TokenList: FC<{
   showSummary?: boolean;
   showSearchBar?: boolean;
@@ -159,8 +162,8 @@ export const TokenList: FC<{
 
   useEffect(() => {
     if (!publicKey) return;
-    const cacheKey = `assets-${publicKey?.toBase58()}`;
-    const cachedTokens = cache.get(cacheKey);
+
+    const cachedTokens = cache.get(cacheKey(publicKey));
 
     if (cachedTokens) {
       setTokens(cachedTokens as any[]);
@@ -172,7 +175,7 @@ export const TokenList: FC<{
             .concat([nativeToken(result)]);
 
           setTokens(fetchedTokens);
-          cache.set(cacheKey, fetchedTokens, 5 * 60 * 1000); //5min ttl
+          cache.set(cacheKey(publicKey), fetchedTokens, 5 * 60 * 1000); //5min ttl
         })
         .catch((error) => {
           console.error('Error fetching assets:', error);

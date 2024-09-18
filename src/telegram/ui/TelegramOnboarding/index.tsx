@@ -1,5 +1,5 @@
 import { retrieveLaunchParams } from '@telegram-apps/sdk-react';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPublicKey, verifyAndGetPublicKey } from 'src/telegram/backend';
 import { useTelegramWalletContext } from 'src/telegram/contexts/TelegramWalletContext';
 import { getOrCreateTelegramAdapter } from 'src/telegram/helpers';
@@ -29,6 +29,11 @@ const styles: IStandardStyle = {
     dark: [tw`text-white/30`],
     jupiter: [tw`text-white/30`],
   },
+  container: {
+    light: [tw`text-black !bg-white shadow-xl`],
+    dark: [tw`text-white !bg-[#3A3B43] border border-white/10`],
+    jupiter: [tw`text-white bg-[rgb(49, 62, 76)]`],
+  },
 };
 
 export const TelegramOnboardingIntro: React.FC<{
@@ -55,7 +60,7 @@ export const TelegramOnboardingIntro: React.FC<{
   }, [telegramConfig]);
 
   return (
-    <div tw="flex flex-col justify-center items-center">
+    <div tw="flex flex-col justify-center items-center w-full">
       <img src={'https://unified.jup.ag/new_user_onboarding.png'} width={160} height={160} />
       <div tw="mt-4 flex flex-col justify-center items-center text-center">
         <span tw="text-lg font-semibold">{t(`Create a custodial wallet for @${botUsername}`)}</span>
@@ -112,12 +117,12 @@ export const TelegramOnboardingCompletion: React.FC<{
   btnText: string;
   image: string;
   btnOnClick: React.MouseEventHandler<HTMLButtonElement>;
-}> = ({ title, subtitle, image, btnText, btnOnClick }) => {
+}> = memo(({ title, subtitle, image, btnText, btnOnClick }) => {
   const { theme } = useUnifiedWalletContext();
   const { t } = useTranslation();
 
   return (
-    <div tw="flex flex-col justify-center items-center">
+    <div tw="flex flex-col justify-center items-center w-full">
       <img src={image} width={160} height={160} alt="" />
       <div tw="mt-4 flex flex-col justify-center items-center text-center">
         <span tw="text-lg font-semibold">{t(`${title}`)}</span>
@@ -139,87 +144,89 @@ export const TelegramOnboardingCompletion: React.FC<{
       </div>
     </div>
   );
-};
+});
 
 export type ITelegramOnboardingFlow = 'Onboarding' | 'Created' | 'Already Created' | 'Error';
-export const TelegramOnboardingFlow = ({
-  botUsername,
-  onClose,
-}: {
-  botUsername: string | undefined;
-  onClose: () => void;
-}) => {
-  const { handleConnectClick } = useUnifiedWalletContext();
-
+export const TelegramOnboardingFlow = ({ onClose }: { onClose: () => void }) => {
+  const { handleConnectClick, theme } = useUnifiedWalletContext();
   const { telegramConfig, setShowWalletModal, setTransactionSimulation } = useTelegramWalletContext();
   const [flow, setFlow] = useState<ITelegramOnboardingFlow>('Onboarding');
-  const [animateOut, setAnimateOut] = useState(false);
+  const [animateIn, setAnimateIn] = useState(false);
+
+  const setFlowAnimated = useCallback((flow: ITelegramOnboardingFlow) => {
+    setFlow(flow);
+    contentRef.current?.scrollTo(0, 0); // Scroll to top when flow changes
+    setAnimateIn(true);
+  }, []);
+
+  const handleAnimationEnd = () => {
+    setAnimateIn(false); // Stop animation when it completes
+  };
+  const botUsername = useMemo(() => telegramConfig?.botUsername || '', [telegramConfig]);
 
   const contentRef = useRef<HTMLDivElement>(null);
-  const setFlowAnimated = (flow: ITelegramOnboardingFlow) => {
-    setAnimateOut(true);
-
-    setTimeout(() => {
-      contentRef.current?.scrollTo(0, 0);
-      setAnimateOut(false);
-      setFlow(flow);
-    }, 200);
-  };
 
   return (
     <div
+      id=' id="telegram_onboarding_modal"'
       ref={contentRef}
-      css={[tw`duration-500 animate-fade-in overflow-y-scroll`, animateOut ? tw`animate-fade-out opacity-0` : '']}
+      css={[
+        tw`animate-fade-in p-4 w-full flex flex-col rounded-xl max-h-[90vh] lg:max-h-[576px] max-w-md items-center justify-center`,
+        styles.container[theme],
+      ]}
+      onAnimationEnd={handleAnimationEnd}
       className="hideScrollbar"
     >
-      <div tw="flex flex-col justify-center items-center p-10">
+      <div tw="flex flex-col justify-center items-center w-full">
         <Header showProfilePic={false} onClose={onClose} />
-        {flow === 'Onboarding' ? (
-          <TelegramOnboardingIntro flow={flow} setFlow={setFlowAnimated} botUsername={botUsername || ''} />
-        ) : null}
-        {flow === 'Created' ? (
-          <TelegramOnboardingCompletion
-            title={'Wallet Successfully Created'}
-            subtitle={`You are all set!`}
-            btnText={`Explore @${botUsername}`}
-            image="https://buckets.blinksfeed.com/success.gif"
-            btnOnClick={(e) => {
-              if (telegramConfig) {
-                handleConnectClick(
-                  e,
-                  getOrCreateTelegramAdapter(telegramConfig, setTransactionSimulation, setShowWalletModal),
-                );
-                onClose();
-              }
-            }}
-          />
-        ) : null}
-        {flow === 'Already Created' ? (
-          <TelegramOnboardingCompletion
-            title={`Wallet Already Created`}
-            subtitle={'You are all set!'}
-            btnText={`Explore @${botUsername}`}
-            image="https://buckets.blinksfeed.com/success.gif"
-            btnOnClick={(e) => {
-              if (telegramConfig) {
-                handleConnectClick(
-                  e,
-                  getOrCreateTelegramAdapter(telegramConfig, setTransactionSimulation, setShowWalletModal),
-                );
-                onClose();
-              }
-            }}
-          />
-        ) : null}
-        {flow === 'Error' ? (
-          <TelegramOnboardingCompletion
-            title={'An error occurred while attempting to create your wallet.'}
-            subtitle={`Contact @${botUsername}`}
-            btnText={'Try Again'}
-            image="https://buckets.blinksfeed.com/error.png"
-            btnOnClick={() => setFlow('Onboarding')}
-          />
-        ) : null}
+        <div css={[tw`w-full`, animateIn && tw`animate-fade-right duration-500`]}>
+          {flow === 'Onboarding' ? (
+            <TelegramOnboardingIntro flow={flow} setFlow={setFlowAnimated} botUsername={botUsername || ''} />
+          ) : null}
+          {flow === 'Created' ? (
+            <TelegramOnboardingCompletion
+              title={'Wallet Successfully Created'}
+              subtitle={`You are all set!`}
+              btnText={`Explore @${botUsername}`}
+              image="https://buckets.blinksfeed.com/success.gif"
+              btnOnClick={(e) => {
+                if (telegramConfig) {
+                  handleConnectClick(
+                    e,
+                    getOrCreateTelegramAdapter(telegramConfig, setTransactionSimulation, setShowWalletModal),
+                  );
+                  onClose();
+                }
+              }}
+            />
+          ) : null}
+          {flow === 'Already Created' ? (
+            <TelegramOnboardingCompletion
+              title={`Wallet Already Created`}
+              subtitle={'You are all set!'}
+              btnText={`Explore @${botUsername}`}
+              image="https://buckets.blinksfeed.com/success.gif"
+              btnOnClick={(e) => {
+                if (telegramConfig) {
+                  handleConnectClick(
+                    e,
+                    getOrCreateTelegramAdapter(telegramConfig, setTransactionSimulation, setShowWalletModal),
+                  );
+                  onClose();
+                }
+              }}
+            />
+          ) : null}
+          {flow === 'Error' ? (
+            <TelegramOnboardingCompletion
+              title={'An error occurred while attempting to create your wallet.'}
+              subtitle={`Contact @${botUsername}`}
+              btnText={'Try Again'}
+              image="https://buckets.blinksfeed.com/error.png"
+              btnOnClick={() => setFlowAnimated('Onboarding')}
+            />
+          ) : null}
+        </div>
       </div>
     </div>
   );

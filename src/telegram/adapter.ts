@@ -40,11 +40,15 @@ export class TelegramWalletAdapter extends BaseMessageSignerWalletAdapter {
   private _publicKey: PublicKey | null;
   private _wallet: TelegramWallet | null;
   private _config: ITelegramConfig;
-  private _simulationCallback: (transaction: Transaction | VersionedTransaction) => Promise<boolean>;
+  private _simulationCallback: (
+    transaction: Transaction | VersionedTransaction,
+  ) => Promise<{ result: boolean; onCompletion?: () => void; onError?: (error: string) => void }>;
 
   constructor(
     config: ITelegramConfig,
-    simulationCallback: (transaction: Transaction | VersionedTransaction) => Promise<boolean>,
+    simulationCallback: (
+      transaction: Transaction | VersionedTransaction,
+    ) => Promise<{ result: boolean; onCompletion?: () => void; onError?: (error: string) => void }>,
   ) {
     super();
     this._connecting = false;

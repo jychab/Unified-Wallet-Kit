@@ -1,7 +1,8 @@
-import { FC } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { IStandardStyle, useUnifiedWalletContext } from 'src/contexts/UnifiedWalletContext';
 import { useTelegramWalletContext } from 'src/telegram/contexts/TelegramWalletContext';
 import tw from 'twin.macro';
+import { LoadingSpinner } from './components/LoadingSpinner';
 
 const styles: IStandardStyle = {
   container: {
@@ -44,20 +45,32 @@ const styles: IStandardStyle = {
 export const TransactionSimulationPage: FC = () => {
   const { theme } = useUnifiedWalletContext();
   const { simulatedTransaction, telegramConfig } = useTelegramWalletContext();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>();
+  useEffect(() => {
+    if (loading && !simulatedTransaction) {
+      setLoading(false);
+    } else if (loading && simulatedTransaction?.error) {
+      setLoading(false);
+      setError(simulatedTransaction?.error);
+    }
+  }, [simulatedTransaction]);
 
   return (
-    <div tw="flex flex-col items-center justify-center gap-4 pt-4">
+    <div tw="flex flex-col w-full items-center justify-center gap-4 pt-4">
       <div>Simulation...</div>
+      {error && <span>{error}</span>}
       <div tw="flex justify-between gap-4 mt-8 items-center w-full">
         <button
           type="button"
-          onClick={(e) => {
+          disabled={loading}
+          onClick={() => {
             if (simulatedTransaction) {
               simulatedTransaction.onCancel();
             }
           }}
           css={[
-            tw`text-white font-semibold text-base w-full rounded-lg border border-white/10 py-4 leading-none`,
+            tw`text-white font-semibold text-base w-full rounded-lg border border-white/10 py-4 leading-none focus-within:outline-none`,
             styles.walletButton[theme],
           ]}
         >
@@ -65,17 +78,20 @@ export const TransactionSimulationPage: FC = () => {
         </button>
         <button
           type="button"
-          onClick={async (e) => {
+          disabled={loading}
+          onClick={async () => {
             if (simulatedTransaction && telegramConfig) {
+              setLoading(true);
               simulatedTransaction.onApproval();
             }
           }}
           css={[
-            tw`text-white font-semibold text-base w-full rounded-lg border border-white/10 py-4 leading-none`,
+            tw`text-white font-semibold text-base w-full rounded-lg border border-white/10 py-4 leading-none justify-center items-center flex focus-within:outline-none`,
+            loading ? tw`py-2` : tw`py-4`,
             styles.walletButton[theme],
           ]}
         >
-          {'Approve'}
+          {loading ? <LoadingSpinner twStyle={tw`w-8 h-8 animate-spin text-gray-600 fill-blue-600`} /> : 'Approve'}
         </button>
       </div>
     </div>

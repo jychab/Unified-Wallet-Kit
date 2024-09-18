@@ -20,8 +20,8 @@ export const TelegramWalletButton: React.FC<{
   currentUserClassName?: string;
 }> = ({ overrideContent, buttonClassName: className }) => {
   const { theme } = useUnifiedWalletContext();
-  const { telegramConfig, setShowWalletModal } = useTelegramWalletContext();
-  const { wallet, publicKey } = useUnifiedWallet();
+  const { telegramConfig, setShowWalletModal, setShowOnboardingModal } = useTelegramWalletContext();
+  const { publicKey } = useUnifiedWallet();
   const [userName, setUsername] = useState('');
   useEffect(() => {
     try {
@@ -36,8 +36,12 @@ export const TelegramWalletButton: React.FC<{
   const handleClick = useCallback(async () => {
     if (publicKey) {
       setShowWalletModal(true);
+      setShowOnboardingModal(false);
+    } else {
+      setShowOnboardingModal(true);
+      setShowWalletModal(false);
     }
-  }, [wallet, publicKey]);
+  }, [publicKey]);
 
   return overrideContent ? (
     // To prevent react render error where <button> is nested

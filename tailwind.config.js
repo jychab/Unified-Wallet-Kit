@@ -1,4 +1,4 @@
-const plugin = require('tailwindcss/plugin')
+const plugin = require('tailwindcss/plugin');
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
@@ -21,10 +21,14 @@ module.exports = {
         'v3-primary': '#c7f284',
       },
       transitionProperty: {
-        'height': 'height',
+        height: 'height',
         'max-height': 'max-height',
       },
       keyframes: {
+        'fade-right': {
+          '0%': { opacity: '0.2', transform: 'translateX(50px)' },
+          '100%': { opacity: '1', transform: 'translateX(0px)' },
+        },
         'fade-in': {
           '0%': {
             opacity: '0.2',
@@ -43,6 +47,7 @@ module.exports = {
         },
       },
       animation: {
+        'fade-right': 'fade-right 0.15s ease-in-out forwards',
         'fade-in': 'fade-in 0.15s ease-in-out',
         'fade-out': 'fade-out 0.15s ease-out',
         shine: 'shine 3.5s linear infinite',
@@ -50,7 +55,7 @@ module.exports = {
       },
       backgroundImage: {
         'v2-text-gradient': 'linear-gradient(247.44deg, #C7F284 13.88%, #00BEF0 99.28%)',
-      }
+      },
     },
   },
   variants: {
@@ -59,4 +64,4 @@ module.exports = {
       backgroundImage: ['dark', 'hover', 'focus-within', 'focus'],
     },
   },
-}
+};

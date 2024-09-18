@@ -8,6 +8,7 @@ import { usePrevious } from 'react-use';
 import WalletConnectionProvider, { IUnifiedWalletConfig } from './WalletConnectionProvider';
 
 import { useTelegramWalletContext } from 'src/telegram/contexts/TelegramWalletContext';
+import { TelegramOnboardingFlow } from 'src/telegram/ui/TelegramOnboarding';
 import { TelegramWalletModal } from 'src/telegram/ui/TelegramWalletModal';
 import ModalDialog from '../components/ModalDialog';
 import UnifiedWalletModal from '../components/UnifiedWalletModal';
@@ -49,7 +50,8 @@ const UnifiedWalletContextProvider: React.FC<
     config: IUnifiedWalletConfig;
   } & PropsWithChildren
 > = ({ config, children }) => {
-  const { setShowWalletModal, showWalletModal } = useTelegramWalletContext();
+  const { setShowWalletModal, showWalletModal, telegramConfig, showOnboardingModal, setShowOnboardingModal } =
+    useTelegramWalletContext();
   const { publicKey, wallet, select, connect } = useUnifiedWallet();
   const previousPublicKey = usePrevious<PublicKey | null>(publicKey);
   const previousWallet = usePrevious<Wallet | null>(wallet);
@@ -169,9 +171,16 @@ const UnifiedWalletContextProvider: React.FC<
       <ModalDialog open={showModal} onClose={() => setShowModal(false)}>
         <UnifiedWalletModal onClose={() => setShowModal(false)} />
       </ModalDialog>
-      <ModalDialog open={showWalletModal} onClose={() => setShowWalletModal(false)}>
-        <TelegramWalletModal onClose={() => setShowWalletModal(false)} />
-      </ModalDialog>
+      {telegramConfig && (
+        <ModalDialog open={showWalletModal && !showOnboardingModal} onClose={() => setShowWalletModal(false)}>
+          <TelegramWalletModal onClose={() => setShowWalletModal(false)} />
+        </ModalDialog>
+      )}
+      {telegramConfig && (
+        <ModalDialog open={showOnboardingModal && !showWalletModal} onClose={() => setShowOnboardingModal(false)}>
+          <TelegramOnboardingFlow onClose={() => setShowOnboardingModal(false)} />
+        </ModalDialog>
+      )}
       {children}
     </UnifiedWalletContext.Provider>
   );
