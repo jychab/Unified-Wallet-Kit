@@ -8,7 +8,6 @@ import { WalletIcon, WalletListItem } from './WalletListItem';
 import Collapse from '../../components/Collapse';
 
 import { SolanaMobileWalletAdapterWalletName } from '@solana-mobile/wallet-adapter-mobile';
-import { getInitData } from 'src/telegram/helpers';
 import { useTranslation } from '../../contexts/TranslationProvider';
 import { IStandardStyle, useUnifiedWallet, useUnifiedWalletContext } from '../../contexts/UnifiedWalletContext';
 import { usePreviouslyConnected } from '../../contexts/WalletConnectionProvider/previouslyConnectedProvider';
@@ -17,6 +16,7 @@ import ChevronUpIcon from '../../icons/ChevronUpIcon';
 import CloseIcon from '../../icons/CloseIcon';
 import { isMobile, useOutsideClick } from '../../misc/utils';
 import { useTelegramWalletContext } from '../../telegram/contexts/TelegramWalletContext';
+import { getInitData } from '../../telegram/helpers';
 import NotInstalled from './NotInstalled';
 import { OnboardingFlow } from './Onboarding';
 
