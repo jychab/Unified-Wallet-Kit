@@ -1,7 +1,11 @@
-import React, { PropsWithChildren, useCallback, useEffect, useRef, useState } from 'react'
+import React, { PropsWithChildren, useCallback, useEffect, useRef, useState } from 'react';
 import tw from 'twin.macro';
 
-const ModalDialog: React.FC<{ open: boolean; onClose: () => void } & PropsWithChildren> = ({ open, onClose: onCloseFunc, children }) => {
+const ModalDialog: React.FC<{ open: boolean; onClose: () => void } & PropsWithChildren> = ({
+  open,
+  onClose: onCloseFunc,
+  children,
+}) => {
   const ref = useRef<HTMLDialogElement>(null);
 
   const [isLocalOpen, setIsLocalOpen] = useState(false);
@@ -13,7 +17,7 @@ const ModalDialog: React.FC<{ open: boolean; onClose: () => void } & PropsWithCh
         setIsLocalOpen(open);
       }, 150);
     }
-  }, [open])
+  }, [open]);
 
   const onClose = useCallback(() => {
     ref.current?.close();
@@ -47,14 +51,15 @@ const ModalDialog: React.FC<{ open: boolean; onClose: () => void } & PropsWithCh
       role="dialog"
       aria-modal="true"
       css={[
-        tw`top-0 left-0 h-full w-full flex items-center justify-center bg-black/25 backdrop-blur-sm animate-fade-in cursor-auto z-50`,
+        tw`inset-0 h-screen w-screen flex items-center justify-center bg-black/25 backdrop-blur-sm animate-fade-in cursor-auto z-50 p-0 m-0`,
+        `max-width: 100vw; max-height: 100vh;`,
         isLocalOpen && !open && tw`animate-fade-out opacity-0`,
       ]}
       ref={ref}
     >
       {children}
     </dialog>
-  )
-}
+  );
+};
 
-export default ModalDialog
+export default ModalDialog;
