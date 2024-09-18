@@ -3,6 +3,7 @@ import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from '
 import tw from 'twin.macro';
 import { useTranslation } from '../../../contexts/TranslationProvider';
 import { IStandardStyle, useUnifiedWalletContext } from '../../../contexts/UnifiedWalletContext';
+import { useOutsideClick } from '../../../misc/utils';
 import { TelegramWalletAdapter } from '../../adapter';
 import { createPublicKey, verifyAndGetPublicKey } from '../../backend';
 import { useTelegramWalletContext } from '../../contexts/TelegramWalletContext';
@@ -53,13 +54,13 @@ export const TelegramOnboardingIntro: React.FC<{
         retrieveLaunchParams();
         setIsUserLoggedInToTelegram(true);
       } catch (e) {
-        setIsUserLoggedInToTelegram(true);
+        setIsUserLoggedInToTelegram(false);
       }
     }
   }, [telegramConfig]);
 
   return (
-    <div tw="flex flex-col justify-center items-center w-full">
+    <div tw="flex flex-col justify-center items-center w-full p-10">
       <img src={'https://unified.jup.ag/new_user_onboarding.png'} width={160} height={160} />
       <div tw="mt-4 flex flex-col justify-center items-center text-center">
         <span tw="text-lg font-semibold">{t(`Create a custodial wallet for @${botUsername}`)}</span>
@@ -121,7 +122,7 @@ export const TelegramOnboardingCompletion: React.FC<{
   const { t } = useTranslation();
 
   return (
-    <div tw="flex flex-col justify-center items-center w-full">
+    <div tw="flex flex-col justify-center items-center w-full p-10">
       <img src={image} width={160} height={160} alt="" />
       <div tw="mt-4 flex flex-col justify-center items-center text-center">
         <span tw="text-lg font-semibold">{t(`${title}`)}</span>
@@ -151,7 +152,9 @@ export const TelegramOnboardingFlow = ({ onClose }: { onClose: () => void }) => 
   const { setShowWalletModal, setTransactionSimulation } = useTelegramWalletContext();
   const [flow, setFlow] = useState<ITelegramOnboardingFlow>('Onboarding');
   const [animateIn, setAnimateIn] = useState(false);
-
+  const contentRef = useRef<HTMLDivElement>(null);  
+  useOutsideClick(contentRef, onClose);
+  
   const setFlowAnimated = useCallback((flow: ITelegramOnboardingFlow) => {
     setFlow(flow);
     contentRef.current?.scrollTo(0, 0); // Scroll to top when flow changes
@@ -163,7 +166,7 @@ export const TelegramOnboardingFlow = ({ onClose }: { onClose: () => void }) => 
   };
   const botUsername = useMemo(() => telegramConfig?.botUsername || '', [telegramConfig]);
 
-  const contentRef = useRef<HTMLDivElement>(null);
+ 
 
   return (
     <div

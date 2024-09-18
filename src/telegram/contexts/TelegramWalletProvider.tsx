@@ -10,7 +10,9 @@ const TelegramWalletContextProvider: React.FC<{} & PropsWithChildren> = ({ child
   const [showOnboardingModal, setShowOnboardingModal] = useState(false);
   const [simulatedTransaction, setTransactionSimulation] = useState<
     | {
-        transaction: Transaction | VersionedTransaction;
+      transaction?: Transaction | VersionedTransaction;
+        error?: string;
+        message?:string;
         onApproval: () => void;
         onCancel: () => void;
       }

@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import tw from 'twin.macro';
 import { IStandardStyle, useUnifiedWalletContext } from '../../../contexts/UnifiedWalletContext';
+import { useOutsideClick } from '../../../misc/utils';
 import { useTelegramWalletContext } from '../../contexts/TelegramWalletContext';
 import { Header } from './components/Header';
 import { DepositPage } from './DepositPage';
@@ -31,6 +32,12 @@ export const TelegramWalletModal: React.FC<ITelegramWalletModal> = ({ onClose })
   const [animateIn, setAnimateIn] = useState(false);
   const [selectedToken, setSelectedToken] = useState<any>();
   const contentRef = useRef<HTMLDivElement>(null);
+  useOutsideClick(contentRef, () => {
+    if (simulatedTransaction?.onCancel) {
+      simulatedTransaction.onCancel();
+    }
+    onClose();
+  });
 
   const setFlowAnimated = useCallback((flow: ITelegramWalletFlow) => {
     setFlow(flow);

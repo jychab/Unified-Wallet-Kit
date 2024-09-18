@@ -10,6 +10,7 @@ import {
   TransactionSignature,
   VersionedTransaction,
 } from '@solana/web3.js';
+import { retrieveLaunchParams } from '@telegram-apps/sdk-react';
 import { Dispatch, SetStateAction } from 'react';
 import { PersistentCache } from './cache';
 
@@ -19,8 +20,9 @@ export function createAdapterSimulationCallback(
   setTransactionSimulation: Dispatch<
     SetStateAction<
       | {
-          transaction: Transaction | VersionedTransaction;
+          transaction?: Transaction | VersionedTransaction;
           error?: string;
+          message?:string;
           onApproval: () => void;
           onCancel: () => void;
         }
@@ -29,7 +31,8 @@ export function createAdapterSimulationCallback(
   >,
   setShowWalletModal: (showWalletModal: boolean) => void,
 ) {
-  const simulationCallback = (x: Transaction | VersionedTransaction) => {
+  const simulationCallback = ( transaction?: Transaction | VersionedTransaction,
+    message?:string) => {
     return new Promise(
       (resolve: (value: { result: boolean; onCompletion?: () => void; onError?: (error: string) => void }) => any) => {
         let timeoutId;
@@ -43,12 +46,12 @@ export function createAdapterSimulationCallback(
           console.log('Error Occurred while signing transaction');
           setTransactionSimulation((prev) => (prev ? { ...prev, error } : undefined));
         };
-        const approveTransaction = () => {
+        const onApproval = () => {
           console.log('Transaction approved by user');
           clearTimeout(timeoutId);
           resolve({ result: true, onCompletion, onError }); // User approved
         };
-        const cancelTransaction = () => {
+        const onCancel = () => {
           console.log('Transaction canceled by user');
           clearTimeout(timeoutId);
           setShowWalletModal(false); // Close modal
@@ -58,11 +61,20 @@ export function createAdapterSimulationCallback(
 
         console.log('Setting transaction simulation and opening modal');
         setShowWalletModal(true);
-        setTransactionSimulation({
-          transaction: x,
-          onApproval: approveTransaction,
-          onCancel: cancelTransaction,
-        });
+        if (transaction) {
+          setTransactionSimulation({
+            transaction,
+            onApproval,
+            onCancel,
+          });
+        }else if (message){
+          setTransactionSimulation({
+            message,
+            onApproval,
+            onCancel,
+          });
+        }
+       
         // Set up a timeout to automatically resolve after 1 minute (60000ms)
         timeoutId = setTimeout(() => {
           console.log('Transaction timed out after 1 minute');
@@ -258,3 +270,15 @@ export async function getSimulationUnits(
   }
   return simulation.value.unitsConsumed;
 }
+
+export function getInitData() {
+  let initDataRaw;
+  try {
+    initDataRaw = retrieveLaunchParams().initDataRaw;
+  } catch (e) {
+    throw Error('User not on telegram.');
+  }
+  if (!initDataRaw) throw Error('Telegram User not found.');
+  return initDataRaw;
+}
+

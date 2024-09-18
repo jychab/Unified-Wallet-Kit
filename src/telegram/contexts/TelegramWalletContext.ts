@@ -14,8 +14,9 @@ export interface ITelegramWalletContext {
   setTxSig: (tx: string | undefined) => void;
   simulatedTransaction:
     | {
-        transaction: Transaction | VersionedTransaction;
-        error?: string;
+      transaction?: Transaction | VersionedTransaction;
+      error?: string;
+      message?:string;
         onApproval: () => void;
         onCancel: () => void;
       }
@@ -23,10 +24,11 @@ export interface ITelegramWalletContext {
   setTransactionSimulation: Dispatch<
     SetStateAction<
       | {
-          transaction: Transaction | VersionedTransaction;
-          error?: string;
-          onApproval: () => void;
-          onCancel: () => void;
+        transaction?: Transaction | VersionedTransaction;
+        error?: string;
+        message?:string;
+        onApproval: () => void;
+        onCancel: () => void;
         }
       | undefined
     >

@@ -1,4 +1,4 @@
-import { ASSOCIATED_TOKEN_PROGRAM_ID, Token } from '@solana/spl-token';
+import { createTransferCheckedInstruction, getAssociatedTokenAddress } from '@solana/spl-token';
 import { Connection, PublicKey, SystemProgram } from '@solana/web3.js';
 import { FC, FormEvent, useState } from 'react';
 import tw from 'twin.macro';
@@ -91,29 +91,27 @@ export const WithdrawalPage: FC<{
         tx = await buildAndSignTransaction([transferIx], publicKey, signTransaction, connection);
       } else {
         const tokenProgram = new PublicKey(token.token_info.token_program);
-        const source = await Token.getAssociatedTokenAddress(
-          ASSOCIATED_TOKEN_PROGRAM_ID,
-          tokenProgram,
+        const source = await getAssociatedTokenAddress(
           new PublicKey(token.id),
           publicKey,
           false,
-        );
-        const destination = await Token.getAssociatedTokenAddress(
-          ASSOCIATED_TOKEN_PROGRAM_ID,
           tokenProgram,
+        );
+        const destination = await getAssociatedTokenAddress(
           new PublicKey(token.id),
           new PublicKey(recipient),
           true,
-        );
-        const transferIx = Token.createTransferCheckedInstruction(
           tokenProgram,
+        );
+        const transferIx = createTransferCheckedInstruction(
           source,
           new PublicKey(token.id),
           destination,
           publicKey,
-          [],
           parseFloat(amount) * 10 ** token.token_info.decimals,
           token.token_info.decimals,
+          undefined,
+          tokenProgram,
         );
         tx = await buildAndSignTransaction([transferIx], publicKey, signTransaction, connection);
       }

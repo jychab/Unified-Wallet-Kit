@@ -1,9 +1,8 @@
 import { EventEmitter } from '@solana/wallet-adapter-base';
 import { PublicKey, SendOptions, Transaction, TransactionSignature, VersionedTransaction } from '@solana/web3.js';
-import { retrieveLaunchParams } from '@telegram-apps/sdk-react';
 import { signMessageOnBackend, signTransactionOnBackend, verifyAndGetPublicKey } from './backend';
 import { ITelegramConfig } from './contexts/TelegramWalletContext';
-import { sendTransactionToBlockchain } from './helpers';
+import { getInitData, sendTransactionToBlockchain } from './helpers';
 
 interface TelegramWalletEvents {
   connect(...args: unknown[]): unknown;
@@ -32,12 +31,14 @@ export class TelegramWalletImpl extends EventEmitter<TelegramWalletEvents> imple
   isConnected = false;
   config: ITelegramConfig;
   simulationCallback: (
-    transaction: Transaction | VersionedTransaction,
+    transaction?: Transaction | VersionedTransaction,
+    message?:string,
   ) => Promise<{ result: boolean; onCompletion?: () => void; onError?: (error: string) => void }>;
   constructor(
     config: ITelegramConfig,
     simulationCallback: (
-      transaction: Transaction | VersionedTransaction,
+      transaction?: Transaction | VersionedTransaction,
+    message?:string,
     ) => Promise<{ result: boolean; onCompletion?: () => void; onError?: (error: string) => void }>,
   ) {
     super();
@@ -141,23 +142,24 @@ export class TelegramWalletImpl extends EventEmitter<TelegramWalletEvents> imple
   }
 
   async signMessage(message: Uint8Array): Promise<{ signature: Uint8Array }> {
+    let result;
     try {
       // Sign the message using the user's Telegram wallet
       const initDataRaw = getInitData();
-      const signature = await signMessageOnBackend(this.config.backendEndpoint, message, initDataRaw);
+      const text = new TextDecoder().decode(message);
+      result = await this.simulationCallback(undefined,text );
+      if (!result.result) throw new Error('Message was not signed.');
+      const signature = await signMessageOnBackend(this.config.backendEndpoint, text, initDataRaw);
+      if (result.onCompletion) {
+        result.onCompletion();
+      }
       return { signature };
     } catch (e) {
+      if (result.onError) {
+        result.onError(JSON.stringify(e));
+      }
       throw Error(JSON.stringify(e));
     }
   }
 }
-function getInitData() {
-  let initDataRaw;
-  try {
-    initDataRaw = retrieveLaunchParams().initDataRaw;
-  } catch (e) {
-    throw Error('User not on telegram.');
-  }
-  if (!initDataRaw) throw Error('Telegram User not found.');
-  return initDataRaw;
-}
+

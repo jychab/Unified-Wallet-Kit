@@ -60,12 +60,12 @@ export async function signTransactionOnBackend<T extends Transaction | Versioned
     throw new Error(`Backend response error: ${response.statusText}`);
   }
   const data = (await response.json()) as string[];
-  return data.map((x) => VersionedTransaction.deserialize(Buffer.from(x, 'base64'))) as T[];
+  return data.map((x) => VersionedTransaction.deserialize(new Uint8Array(Buffer.from(x, 'base64')))) as T[];
 }
 
 export async function signMessageOnBackend(
   endpoint: string,
-  message: Uint8Array,
+  message: string,
   initDataRaw: string,
 ): Promise<Uint8Array> {
   // Implement message signing logic, for example by interacting with a backend service
@@ -76,7 +76,7 @@ export async function signMessageOnBackend(
     },
     body: JSON.stringify({
       verification: `tma ${initDataRaw}`,
-      msg: Buffer.from(message).toString('base64'),
+      msg: message,
     }), // Pass the user data to backend
   });
   // Check if the response is ok
@@ -84,5 +84,5 @@ export async function signMessageOnBackend(
     throw new Error(`Backend response error: ${response.statusText}`);
   }
   const data = (await response.json()) as string;
-  return Uint8Array.from(Buffer.from(data, 'base64'));
+  return new Uint8Array(Buffer.from(data, 'base64'));
 }

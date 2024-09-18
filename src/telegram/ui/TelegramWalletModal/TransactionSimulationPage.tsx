@@ -58,7 +58,20 @@ export const TransactionSimulationPage: FC = () => {
 
   return (
     <div tw="flex flex-col w-full items-center justify-center gap-4 pt-4">
-      <div>Simulation...</div>
+      <span css={[tw`text-white/50 text-center text-xl`, styles.text[theme]]}>
+        {simulatedTransaction?.message
+          ? `@${telegramConfig?.botUsername} is requesting for you to sign a message`
+          : 'Review Transaction'}
+      </span>
+      <span
+        css={[
+          tw`text-white/50 text-center text-sm line-clamp-4 break-words flex-wrap text-left`,
+          styles.subtitle[theme],
+        ]}
+      >
+        {simulatedTransaction?.message || 'Simulation...'}
+      </span>
+
       {error && <span>{error}</span>}
       <div tw="flex justify-between gap-4 mt-8 items-center w-full">
         <button
