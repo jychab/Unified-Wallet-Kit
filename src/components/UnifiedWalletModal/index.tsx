@@ -8,6 +8,7 @@ import { WalletIcon, WalletListItem } from './WalletListItem';
 import Collapse from '../../components/Collapse';
 
 import { SolanaMobileWalletAdapterWalletName } from '@solana-mobile/wallet-adapter-mobile';
+import { getInitData } from 'src/telegram/helpers';
 import { useTranslation } from '../../contexts/TranslationProvider';
 import { IStandardStyle, useUnifiedWallet, useUnifiedWalletContext } from '../../contexts/UnifiedWalletContext';
 import { usePreviouslyConnected } from '../../contexts/WalletConnectionProvider/previouslyConnectedProvider';
@@ -293,12 +294,19 @@ const UnifiedWalletModal: React.FC<IUnifiedWalletModal> = ({ onClose }) => {
 
   const list: { highlightedBy: HIGHLIGHTED_BY; highlight: Adapter[]; others: Adapter[] } = useMemo(() => {
     if (telegramConfig) {
-      const telegramWallet = wallets.find((x) => x.adapter.name === telegramConfig.botUsername);
-      return {
-        highlightedBy: 'TopAndRecommended',
-        highlight: telegramWallet ? [telegramWallet.adapter] : [],
-        others: [],
-      };
+      try {
+        const initData = getInitData();
+        const telegramWallet = wallets.find((x) => x.adapter.name === telegramConfig.botUsername);
+        if (initData && telegramWallet) {
+          return {
+            highlightedBy: 'TopAndRecommended',
+            highlight: [telegramWallet.adapter],
+            others: [],
+          };
+        }
+      } catch (e) {
+        console.log('Not On Telegram');
+      }
     }
     // Then, Installed, Top 3, Loadable, NotDetected
     const filteredAdapters = wallets.reduce<{
