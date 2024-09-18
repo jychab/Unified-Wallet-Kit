@@ -49,18 +49,17 @@ export class TelegramWalletImpl extends EventEmitter<TelegramWalletEvents> imple
   async connect(): Promise<void> {
     // Your logic for connecting the wallet, e.g., retrieving the user's public key from Telegram
     try {
-      const { initDataRaw } = retrieveLaunchParams();
-      if (!initDataRaw) {
-        throw Error('Telegram User not found.');
-      }
+      const initDataRaw = getInitData();
       const publicKey = await verifyAndGetPublicKey(this.config.backendEndpoint, initDataRaw);
       if (publicKey) {
         this.publicKey = new PublicKey(publicKey);
         this.isConnected = true;
         this.emit('connect');
+      } else {
+        throw Error('Unable to retrieve PublicKey');
       }
     } catch (e) {
-      throw Error('Telegram User not found.');
+      throw Error(JSON.stringify(e));
     }
   }
 
@@ -131,7 +130,6 @@ export class TelegramWalletImpl extends EventEmitter<TelegramWalletEvents> imple
       if (result.onCompletion) {
         result.onCompletion();
       }
-
       const signature = await sendTransactionToBlockchain(this.config.rpcEndpoint, signedTransaction, options);
       return { signature };
     } catch (e) {
@@ -145,14 +143,11 @@ export class TelegramWalletImpl extends EventEmitter<TelegramWalletEvents> imple
   async signMessage(message: Uint8Array): Promise<{ signature: Uint8Array }> {
     try {
       // Sign the message using the user's Telegram wallet
-      const { initDataRaw } = retrieveLaunchParams();
-      if (!initDataRaw) {
-        throw Error('Telegram User not found.');
-      }
+      const initDataRaw = getInitData();
       const signature = await signMessageOnBackend(this.config.backendEndpoint, message, initDataRaw);
       return { signature };
     } catch (e) {
-      throw Error('Telegram User not found.');
+      throw Error(JSON.stringify(e));
     }
   }
 }

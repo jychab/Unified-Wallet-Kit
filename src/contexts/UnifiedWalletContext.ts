@@ -10,6 +10,7 @@ export type IUnifiedTheme = 'light' | 'dark' | 'jupiter';
 export type IStandardStyle = Record<string, { [key in IUnifiedTheme]: TwStyle[] }>;
 
 export interface IUnifiedWalletContext {
+  telegramConfig: IUnifiedWalletConfig['telegramConfig'];
   walletPrecedence: IUnifiedWalletConfig['walletPrecedence'];
   handleConnectClick: (event: React.MouseEvent<HTMLElement, globalThis.MouseEvent>, wallet: Adapter) => Promise<void>;
   showModal: boolean;
@@ -22,6 +23,7 @@ export interface IUnifiedWalletContext {
 
 export const UnifiedWalletContext = createContext<IUnifiedWalletContext>({
   walletPrecedence: [],
+  telegramConfig: undefined,
   handleConnectClick: async (event: React.MouseEvent<HTMLElement, globalThis.MouseEvent>, wallet: Adapter) => {},
   showModal: false,
   setShowModal: (showModal: boolean) => {},

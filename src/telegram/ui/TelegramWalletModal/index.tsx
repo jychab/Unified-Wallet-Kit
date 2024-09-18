@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
-import { IStandardStyle, useUnifiedWalletContext } from 'src/contexts/UnifiedWalletContext';
-import { useTelegramWalletContext } from 'src/telegram/contexts/TelegramWalletContext';
 import tw from 'twin.macro';
+import { IStandardStyle, useUnifiedWalletContext } from '../../../contexts/UnifiedWalletContext';
+import { useTelegramWalletContext } from '../../contexts/TelegramWalletContext';
 import { Header } from './components/Header';
 import { DepositPage } from './DepositPage';
 import { MainPage } from './MainPage';

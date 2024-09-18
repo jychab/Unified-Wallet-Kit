@@ -1,10 +1,9 @@
 import { PublicKey } from '@solana/web3.js';
 import { FC, useEffect, useState } from 'react';
-import { IStandardStyle, useUnifiedWallet, useUnifiedWalletContext } from 'src/contexts/UnifiedWalletContext';
-import { useTelegramWalletContext } from 'src/telegram/contexts/TelegramWalletContext';
-import { cache, getAssetsByOwner } from 'src/telegram/helpers';
 import tw from 'twin.macro';
 import { ITelegramWalletFlow } from '..';
+import { IStandardStyle, useUnifiedWallet, useUnifiedWalletContext } from '../../../../contexts/UnifiedWalletContext';
+import { cache, getAssetsByOwner } from '../../../helpers';
 
 const styles: IStandardStyle = {
   container: {
@@ -151,9 +150,7 @@ export const TokenList: FC<{
   setSelectedToken: (selectedToken: any | undefined) => void;
   setFlow: (flow: ITelegramWalletFlow) => void;
 }> = ({ setFlow, setSelectedToken, showSummary = true, showPrices = true, showSearchBar = false }) => {
-  const { theme } = useUnifiedWalletContext();
-
-  const { telegramConfig } = useTelegramWalletContext();
+  const { theme, telegramConfig } = useUnifiedWalletContext();
   const [tokens, setTokens] = useState<any[]>([]);
   const [filtered, setFiltered] = useState<any[]>([]);
   const { publicKey } = useUnifiedWallet();

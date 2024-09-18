@@ -1,7 +1,7 @@
 import { FC } from 'react';
-import { IStandardStyle, useUnifiedWalletContext } from 'src/contexts/UnifiedWalletContext';
 import tw from 'twin.macro';
 import { ITelegramWalletFlow } from '.';
+import { IStandardStyle, useUnifiedWalletContext } from '../../../contexts/UnifiedWalletContext';
 import { TokenList } from './components/TokenList';
 
 const styles: IStandardStyle = {

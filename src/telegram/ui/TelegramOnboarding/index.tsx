@@ -1,11 +1,12 @@
 import { retrieveLaunchParams } from '@telegram-apps/sdk-react';
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { createPublicKey, verifyAndGetPublicKey } from 'src/telegram/backend';
-import { useTelegramWalletContext } from 'src/telegram/contexts/TelegramWalletContext';
-import { getOrCreateTelegramAdapter } from 'src/telegram/helpers';
 import tw from 'twin.macro';
 import { useTranslation } from '../../../contexts/TranslationProvider';
 import { IStandardStyle, useUnifiedWalletContext } from '../../../contexts/UnifiedWalletContext';
+import { TelegramWalletAdapter } from '../../adapter';
+import { createPublicKey, verifyAndGetPublicKey } from '../../backend';
+import { useTelegramWalletContext } from '../../contexts/TelegramWalletContext';
+import { createAdapterSimulationCallback } from '../../helpers';
 import { Header } from '../TelegramWalletModal/components/Header';
 
 const styles: IStandardStyle = {
@@ -41,9 +42,7 @@ export const TelegramOnboardingIntro: React.FC<{
   flow: ITelegramOnboardingFlow;
   setFlow: (flow: ITelegramOnboardingFlow) => void;
 }> = ({ flow, setFlow, botUsername }) => {
-  const { theme } = useUnifiedWalletContext();
-
-  const { telegramConfig } = useTelegramWalletContext();
+  const { theme, telegramConfig } = useUnifiedWalletContext();
   const { t } = useTranslation();
 
   const [loading, setLoading] = useState(false);
@@ -148,8 +147,8 @@ export const TelegramOnboardingCompletion: React.FC<{
 
 export type ITelegramOnboardingFlow = 'Onboarding' | 'Created' | 'Already Created' | 'Error';
 export const TelegramOnboardingFlow = ({ onClose }: { onClose: () => void }) => {
-  const { handleConnectClick, theme } = useUnifiedWalletContext();
-  const { telegramConfig, setShowWalletModal, setTransactionSimulation } = useTelegramWalletContext();
+  const { handleConnectClick, theme, telegramConfig } = useUnifiedWalletContext();
+  const { setShowWalletModal, setTransactionSimulation } = useTelegramWalletContext();
   const [flow, setFlow] = useState<ITelegramOnboardingFlow>('Onboarding');
   const [animateIn, setAnimateIn] = useState(false);
 
@@ -193,7 +192,10 @@ export const TelegramOnboardingFlow = ({ onClose }: { onClose: () => void }) => 
                 if (telegramConfig) {
                   handleConnectClick(
                     e,
-                    getOrCreateTelegramAdapter(telegramConfig, setTransactionSimulation, setShowWalletModal),
+                    new TelegramWalletAdapter(
+                      telegramConfig,
+                      createAdapterSimulationCallback(setTransactionSimulation, setShowWalletModal),
+                    ),
                   );
                   onClose();
                 }
@@ -210,7 +212,10 @@ export const TelegramOnboardingFlow = ({ onClose }: { onClose: () => void }) => 
                 if (telegramConfig) {
                   handleConnectClick(
                     e,
-                    getOrCreateTelegramAdapter(telegramConfig, setTransactionSimulation, setShowWalletModal),
+                    new TelegramWalletAdapter(
+                      telegramConfig,
+                      createAdapterSimulationCallback(setTransactionSimulation, setShowWalletModal),
+                    ),
                   );
                   onClose();
                 }

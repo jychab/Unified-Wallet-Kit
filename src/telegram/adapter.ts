@@ -26,8 +26,7 @@ import {
 } from '@solana/web3.js';
 import { retrieveLaunchParams } from '@telegram-apps/sdk-react';
 import { ITelegramConfig } from './contexts/TelegramWalletContext';
-import { getOrCreateTelegramWallet, saveWalletState } from './helpers';
-import { TelegramWallet } from './wallet';
+import { TelegramWallet, TelegramWalletImpl } from './wallet';
 
 export class TelegramWalletAdapter extends BaseMessageSignerWalletAdapter {
   name: WalletName<string>;
@@ -94,7 +93,7 @@ export class TelegramWalletAdapter extends BaseMessageSignerWalletAdapter {
 
       this._connecting = true;
 
-      const wallet = getOrCreateTelegramWallet(this._config, this._simulationCallback);
+      const wallet = new TelegramWalletImpl(this._config, this._simulationCallback);
 
       if (!wallet.isConnected) {
         try {
@@ -134,7 +133,6 @@ export class TelegramWalletAdapter extends BaseMessageSignerWalletAdapter {
       wallet.off('disconnect', this._disconnected);
       wallet.off('accountChanged', this._accountChanged);
 
-      saveWalletState(this._config, null); // Clear the public key from local storage
       this._wallet = null;
       this._publicKey = null;
 
@@ -257,7 +255,6 @@ export class TelegramWalletAdapter extends BaseMessageSignerWalletAdapter {
 
     if (publicKey.equals(newPublicKey)) return;
 
-    saveWalletState(this._config, this._wallet);
     this._publicKey = newPublicKey;
     this.emit('connect', newPublicKey);
   };

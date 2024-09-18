@@ -8,7 +8,6 @@ import { WalletIcon, WalletListItem } from './WalletListItem';
 import Collapse from '../../components/Collapse';
 
 import { SolanaMobileWalletAdapterWalletName } from '@solana-mobile/wallet-adapter-mobile';
-import { useTelegramWalletContext } from 'src/telegram/contexts/TelegramWalletContext';
 import { useTranslation } from '../../contexts/TranslationProvider';
 import { IStandardStyle, useUnifiedWallet, useUnifiedWalletContext } from '../../contexts/UnifiedWalletContext';
 import { usePreviouslyConnected } from '../../contexts/WalletConnectionProvider/previouslyConnectedProvider';
@@ -16,6 +15,7 @@ import ChevronDownIcon from '../../icons/ChevronDownIcon';
 import ChevronUpIcon from '../../icons/ChevronUpIcon';
 import CloseIcon from '../../icons/CloseIcon';
 import { isMobile, useOutsideClick } from '../../misc/utils';
+import { useTelegramWalletContext } from '../../telegram/contexts/TelegramWalletContext';
 import NotInstalled from './NotInstalled';
 import { OnboardingFlow } from './Onboarding';
 
@@ -83,9 +83,9 @@ const ListOfWallets: React.FC<{
   onToggle: (nextValue?: any) => void;
   isOpen: boolean;
 }> = ({ list, onToggle, isOpen }) => {
-  const { handleConnectClick, walletlistExplanation, walletAttachments, theme, setShowModal } =
+  const { telegramConfig, handleConnectClick, walletlistExplanation, walletAttachments, theme, setShowModal } =
     useUnifiedWalletContext();
-  const { telegramConfig, setShowOnboardingModal, setShowWalletModal } = useTelegramWalletContext();
+  const { setShowOnboardingModal, setShowWalletModal } = useTelegramWalletContext();
   const { t } = useTranslation();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showNotInstalled, setShowNotInstalled] = useState<Adapter | false>(false);
@@ -95,8 +95,8 @@ const ListOfWallets: React.FC<{
       if (adapter.readyState === WalletReadyState.NotDetected) {
         if (telegramConfig && adapter.name == telegramConfig?.botUsername) {
           setShowModal(false);
-          setShowOnboardingModal(true);
           setShowWalletModal(false);
+          setShowOnboardingModal(true);
         } else {
           setShowNotInstalled(adapter);
         }
@@ -287,16 +287,16 @@ const sortByPrecedence = (walletPrecedence: WalletName[]) => (a: Adapter, b: Ada
 
 const UnifiedWalletModal: React.FC<IUnifiedWalletModal> = ({ onClose }) => {
   const { wallets } = useUnifiedWallet();
-  const { walletPrecedence, theme, walletModalAttachments } = useUnifiedWalletContext();
-  const { telegramConfig } = useTelegramWalletContext();
+  const { telegramConfig, walletPrecedence, theme, walletModalAttachments } = useUnifiedWalletContext();
   const [isOpen, onToggle] = useToggle(false);
   const previouslyConnected = usePreviouslyConnected();
 
   const list: { highlightedBy: HIGHLIGHTED_BY; highlight: Adapter[]; others: Adapter[] } = useMemo(() => {
     if (telegramConfig) {
+      const telegramWallet = wallets.find((x) => x.adapter.name === telegramConfig.botUsername);
       return {
         highlightedBy: 'TopAndRecommended',
-        highlight: [wallets[0].adapter],
+        highlight: telegramWallet ? [telegramWallet.adapter] : [],
         others: [],
       };
     }

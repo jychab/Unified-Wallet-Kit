@@ -1,9 +1,8 @@
 import { retrieveLaunchParams } from '@telegram-apps/sdk-react';
 import { FC, useEffect, useState } from 'react';
-import { IStandardStyle, useUnifiedWallet, useUnifiedWalletContext } from 'src/contexts/UnifiedWalletContext';
+import { IStandardStyle, useUnifiedWallet, useUnifiedWalletContext } from '../../../../contexts/UnifiedWalletContext';
 
 import { memo } from 'react';
-import { useTelegramWalletContext } from 'src/telegram/contexts/TelegramWalletContext';
 import tw from 'twin.macro';
 import CloseIcon from '../../icons/CloseIcon';
 
@@ -17,9 +16,7 @@ const styles: IStandardStyle = {
 
 export const Header: FC<{ onClose: () => void; showProfilePic?: boolean }> = memo(
   ({ onClose, showProfilePic = true }) => {
-    const { theme } = useUnifiedWalletContext();
-
-    const { telegramConfig } = useTelegramWalletContext();
+    const { theme, telegramConfig } = useUnifiedWalletContext();
     const { publicKey } = useUnifiedWallet();
     const [userName, setUsername] = useState('');
     const [profilePic, setProfilePic] = useState('');

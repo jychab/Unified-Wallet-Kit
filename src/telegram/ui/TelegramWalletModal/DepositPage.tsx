@@ -1,7 +1,7 @@
 import { FC } from 'react';
-import { IStandardStyle, useUnifiedWallet, useUnifiedWalletContext } from 'src/contexts/UnifiedWalletContext';
 import tw from 'twin.macro';
 import { ITelegramWalletFlow } from '.';
+import { IStandardStyle, useUnifiedWallet, useUnifiedWalletContext } from '../../../contexts/UnifiedWalletContext';
 import LeftArrowIcon from '../icons/LeftArrowIcon';
 import CopyButton from './components/CopyButton';
 

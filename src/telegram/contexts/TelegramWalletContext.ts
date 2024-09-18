@@ -10,10 +10,8 @@ export interface ITelegramConfig {
 }
 
 export interface ITelegramWalletContext {
-  telegramConfig: ITelegramConfig | undefined;
   txSig: string | undefined;
   setTxSig: (tx: string | undefined) => void;
-
   simulatedTransaction:
     | {
         transaction: Transaction | VersionedTransaction;
@@ -35,13 +33,11 @@ export interface ITelegramWalletContext {
   >;
   showWalletModal: boolean;
   setShowWalletModal: (showWalletModal: boolean) => void;
-
   showOnboardingModal: boolean;
   setShowOnboardingModal: (showOnboardingtModal: boolean) => void;
 }
 
 export const TelegramWalletContext = createContext<ITelegramWalletContext>({
-  telegramConfig: undefined,
   txSig: undefined,
   setTxSig: () => {},
   simulatedTransaction: undefined,

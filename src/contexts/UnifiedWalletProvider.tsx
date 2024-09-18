@@ -7,12 +7,13 @@ import { Adapter, WalletReadyState } from '@solana/wallet-adapter-base';
 import { usePrevious } from 'react-use';
 import WalletConnectionProvider, { IUnifiedWalletConfig } from './WalletConnectionProvider';
 
-import { useTelegramWalletContext } from 'src/telegram/contexts/TelegramWalletContext';
-import { TelegramOnboardingFlow } from 'src/telegram/ui/TelegramOnboarding';
-import { TelegramWalletModal } from 'src/telegram/ui/TelegramWalletModal';
 import ModalDialog from '../components/ModalDialog';
 import UnifiedWalletModal from '../components/UnifiedWalletModal';
 import { shortenAddress } from '../misc/utils';
+import { useTelegramWalletContext } from '../telegram/contexts/TelegramWalletContext';
+import { TelegramWalletProvider } from '../telegram/contexts/TelegramWalletProvider';
+import { TelegramOnboardingFlow } from '../telegram/ui/TelegramOnboarding';
+import { TelegramWalletModal } from '../telegram/ui/TelegramWalletModal';
 import { TranslationProvider } from './TranslationProvider';
 import {
   UnifiedWalletContext,
@@ -50,7 +51,7 @@ const UnifiedWalletContextProvider: React.FC<
     config: IUnifiedWalletConfig;
   } & PropsWithChildren
 > = ({ config, children }) => {
-  const { setShowWalletModal, showWalletModal, telegramConfig, showOnboardingModal, setShowOnboardingModal } =
+  const { setShowWalletModal, showWalletModal, showOnboardingModal, setShowOnboardingModal } =
     useTelegramWalletContext();
   const { publicKey, wallet, select, connect } = useUnifiedWallet();
   const previousPublicKey = usePrevious<PublicKey | null>(publicKey);
@@ -158,6 +159,7 @@ const UnifiedWalletContextProvider: React.FC<
   return (
     <UnifiedWalletContext.Provider
       value={{
+        telegramConfig: config.telegramConfig,
         walletPrecedence: config.walletPrecedence || [],
         handleConnectClick,
         showModal,
@@ -171,12 +173,12 @@ const UnifiedWalletContextProvider: React.FC<
       <ModalDialog open={showModal} onClose={() => setShowModal(false)}>
         <UnifiedWalletModal onClose={() => setShowModal(false)} />
       </ModalDialog>
-      {telegramConfig && (
+      {config.telegramConfig && (
         <ModalDialog open={showWalletModal && !showOnboardingModal} onClose={() => setShowWalletModal(false)}>
           <TelegramWalletModal onClose={() => setShowWalletModal(false)} />
         </ModalDialog>
       )}
-      {telegramConfig && (
+      {config.telegramConfig && (
         <ModalDialog open={showOnboardingModal && !showWalletModal} onClose={() => setShowOnboardingModal(false)}>
           <TelegramOnboardingFlow onClose={() => setShowOnboardingModal(false)} />
         </ModalDialog>
@@ -197,11 +199,13 @@ const UnifiedWalletProvider = ({
 }) => {
   return (
     <TranslationProvider lang={config.lang}>
-      <WalletConnectionProvider config={config} wallets={wallets}>
-        <UnifiedWalletValueProvider>
-          <UnifiedWalletContextProvider config={config}>{children}</UnifiedWalletContextProvider>
-        </UnifiedWalletValueProvider>
-      </WalletConnectionProvider>
+      <TelegramWalletProvider>
+        <WalletConnectionProvider config={config} wallets={wallets}>
+          <UnifiedWalletValueProvider>
+            <UnifiedWalletContextProvider config={config}>{children}</UnifiedWalletContextProvider>
+          </UnifiedWalletValueProvider>
+        </WalletConnectionProvider>
+      </TelegramWalletProvider>
     </TranslationProvider>
   );
 };

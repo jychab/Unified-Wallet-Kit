@@ -1,11 +1,11 @@
 import { ASSOCIATED_TOKEN_PROGRAM_ID, Token } from '@solana/spl-token';
 import { Connection, PublicKey, SystemProgram } from '@solana/web3.js';
 import { FC, FormEvent, useState } from 'react';
-import { IStandardStyle, useUnifiedWallet, useUnifiedWalletContext } from 'src/contexts/UnifiedWalletContext';
-import { useTelegramWalletContext } from 'src/telegram/contexts/TelegramWalletContext';
-import { buildAndSignTransaction, sendAndConfirmTransaction } from 'src/telegram/helpers';
 import tw from 'twin.macro';
 import { ITelegramWalletFlow } from '.';
+import { IStandardStyle, useUnifiedWallet, useUnifiedWalletContext } from '../../../contexts/UnifiedWalletContext';
+import { useTelegramWalletContext } from '../../contexts/TelegramWalletContext';
+import { buildAndSignTransaction, sendAndConfirmTransaction } from '../../helpers';
 import LeftArrowIcon from '../icons/LeftArrowIcon';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { NATIVE_SOL } from './components/TokenList';
@@ -53,8 +53,8 @@ export const WithdrawalPage: FC<{
   setFlow: (flow: ITelegramWalletFlow) => void;
 }> = ({ token, setFlow }) => {
   const { publicKey, signTransaction } = useUnifiedWallet();
-  const { telegramConfig, setShowWalletModal, setTxSig } = useTelegramWalletContext();
-  const { theme } = useUnifiedWalletContext();
+  const { setShowWalletModal, setTxSig } = useTelegramWalletContext();
+  const { theme, telegramConfig } = useUnifiedWalletContext();
   const [recipient, setRecipient] = useState('');
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);

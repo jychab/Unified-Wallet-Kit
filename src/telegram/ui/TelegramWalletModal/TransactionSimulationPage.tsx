@@ -1,7 +1,7 @@
 import { FC, useEffect, useState } from 'react';
-import { IStandardStyle, useUnifiedWalletContext } from 'src/contexts/UnifiedWalletContext';
-import { useTelegramWalletContext } from 'src/telegram/contexts/TelegramWalletContext';
 import tw from 'twin.macro';
+import { IStandardStyle, useUnifiedWalletContext } from '../../../contexts/UnifiedWalletContext';
+import { useTelegramWalletContext } from '../../contexts/TelegramWalletContext';
 import { LoadingSpinner } from './components/LoadingSpinner';
 
 const styles: IStandardStyle = {
@@ -43,8 +43,8 @@ const styles: IStandardStyle = {
 };
 
 export const TransactionSimulationPage: FC = () => {
-  const { theme } = useUnifiedWalletContext();
-  const { simulatedTransaction, telegramConfig } = useTelegramWalletContext();
+  const { theme, telegramConfig } = useUnifiedWalletContext();
+  const { simulatedTransaction } = useTelegramWalletContext();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>();
   useEffect(() => {

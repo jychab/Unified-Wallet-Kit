@@ -1,7 +1,7 @@
 import { FC, useState } from 'react';
-import { IStandardStyle, useUnifiedWalletContext } from 'src/contexts/UnifiedWalletContext';
-import SuccessIcon from 'src/icons/SuccessIcon';
 import tw from 'twin.macro';
+import { IStandardStyle, useUnifiedWalletContext } from '../../../../contexts/UnifiedWalletContext';
+import SuccessIcon from '../../../../icons/SuccessIcon';
 import CopyIcon from '../../icons/CopyIcon';
 
 const styles: IStandardStyle = {

@@ -9,6 +9,10 @@ import { WalletProvider } from '@solana/wallet-adapter-react';
 import { Cluster } from '@solana/web3.js';
 import { FC, PropsWithChildren, ReactNode, useMemo } from 'react';
 
+import { ITelegramConfig, useTelegramWalletContext } from '../../telegram/contexts/TelegramWalletContext';
+
+import { TelegramWalletAdapter } from '../../telegram/adapter';
+import { createAdapterSimulationCallback } from '../../telegram/helpers';
 import { AllLanguage } from '../TranslationProvider/i18n';
 import { IUnifiedTheme } from '../UnifiedWalletContext';
 import HardcodedWalletStandardAdapter, { IHardcodedWalletStandardAdapter } from './HardcodedWalletStandardAdapter';
@@ -54,6 +58,7 @@ export interface IUnifiedWalletConfig {
   walletModalAttachments?: {
     footer?: ReactNode;
   };
+  telegramConfig?: ITelegramConfig;
 }
 
 export interface IUnifiedWalletMetadata {
@@ -70,6 +75,8 @@ const WalletConnectionProvider: FC<
     config: IUnifiedWalletConfig;
   }
 > = ({ wallets: passedWallets, config, children }) => {
+  const { setTransactionSimulation, setShowWalletModal } = useTelegramWalletContext();
+
   const wallets = useMemo(() => {
     return [
       new SolanaMobileWalletAdapter({
@@ -87,7 +94,14 @@ const WalletConnectionProvider: FC<
       }),
       ...passedWallets,
       ...(config.hardcodedWallets || []).map((item) => new HardcodedWalletStandardAdapter(item)),
-    ];
+    ].concat(
+      config.telegramConfig
+        ? new TelegramWalletAdapter(
+            config.telegramConfig,
+            createAdapterSimulationCallback(setTransactionSimulation, setShowWalletModal),
+          )
+        : [],
+    );
   }, []);
 
   return (
