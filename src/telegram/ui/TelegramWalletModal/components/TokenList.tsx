@@ -170,7 +170,6 @@ export const TokenList: FC<{
           const fetchedTokens = result.items
             .filter((x) => x.interface === 'FungibleToken')
             .concat([nativeToken(result)]);
-
           setTokens(fetchedTokens);
           cache.set(cacheKey(publicKey), fetchedTokens, 5 * 60 * 1000); //5min ttl
         })
@@ -193,21 +192,21 @@ export const TokenList: FC<{
     }
   }, [search, tokens]);
   return (
-    <div tw="overflow-y-scroll overflow-x-scroll w-full max-h-[430px]" className="hideScrollbar">
-      <div tw="flex flex-col justify-center items-center w-full py-4 gap-2">
-        {showSummary && <Summary total={tokens.reduce((sum, x) => sum + getTokenPrice(x), 0)} setFlow={setFlow} />}
-        {showSearchBar && (
-          <input
-            type="text"
-            placeholder="Search"
-            css={[
-              tw`flex w-full border p-4 border-white/50 leading-none rounded-lg focus-within:outline-none`,
-              styles.container[theme],
-            ]}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        )}
+    <div tw="flex flex-col justify-center items-center w-full py-4 gap-2">
+      {showSummary && <Summary total={tokens.reduce((sum, x) => sum + getTokenPrice(x), 0)} setFlow={setFlow} />}
+      {showSearchBar && (
+        <input
+          type="text"
+          placeholder="Search"
+          css={[
+            tw`flex w-full border p-4 border-white/50 leading-none rounded-lg focus-within:outline-none`,
+            styles.container[theme],
+          ]}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      )}
+      <div tw="overflow-scroll w-full max-h-[28vh]" className="hideScrollbar">
         {filtered
           .sort((a, b) => getTokenPrice(b) - getTokenPrice(a))
           .map((x) => (

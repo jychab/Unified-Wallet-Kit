@@ -1,11 +1,11 @@
-import React, { ReactNode, useCallback } from 'react';
 import { SolanaMobileWalletAdapterWalletName } from '@solana-mobile/wallet-adapter-mobile';
+import React, { ReactNode, useCallback } from 'react';
 import tw from 'twin.macro';
 
-import { CurrentUserBadge } from '../CurrentUserBadge';
-import { useUnifiedWalletContext, useUnifiedWallet } from '../../contexts/UnifiedWalletProvider';
-import { IStandardStyle, MWA_NOT_FOUND_ERROR } from '../../contexts/UnifiedWalletContext';
 import { useTranslation } from '../../contexts/TranslationProvider';
+import { IStandardStyle, MWA_NOT_FOUND_ERROR } from '../../contexts/UnifiedWalletContext';
+import { useUnifiedWallet, useUnifiedWalletContext } from '../../contexts/UnifiedWalletProvider';
+import { CurrentUserBadge } from '../CurrentUserBadge';
 
 const styles: IStandardStyle = {
   container: {
@@ -68,7 +68,7 @@ export const UnifiedWalletButton: React.FC<{
         <>
           {overrideContent ? (
             // To prevent react render error where <button> is nested
-            <div css={styles.container[theme]} className={className} onClick={handleClick}>
+            <div className={className} onClick={handleClick}>
               {overrideContent}
             </div>
           ) : (

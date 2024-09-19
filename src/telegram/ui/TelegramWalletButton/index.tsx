@@ -55,7 +55,7 @@ export const TelegramWalletButton: React.FC<{
 
   return overrideContent ? (
     // To prevent react render error where <button> is nested
-    <button css={styles.container[theme]} className={className} onClick={handleClick}>
+    <button className={className} onClick={handleClick}>
       {overrideContent}
     </button>
   ) : (

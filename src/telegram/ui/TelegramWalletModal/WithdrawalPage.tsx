@@ -58,6 +58,7 @@ export const WithdrawalPage: FC<{
   const [recipient, setRecipient] = useState('');
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const handleInput = (e: React.FormEvent<HTMLInputElement>) => {
     let value = e.currentTarget.value;
 
@@ -118,7 +119,7 @@ export const WithdrawalPage: FC<{
       console.log('Tx Sig:', txSig);
       setTxSig(txSig);
     } catch (e) {
-      console.log(e);
+      setError(JSON.stringify(e));
     } finally {
       setLoading(false);
     }
@@ -197,6 +198,9 @@ export const WithdrawalPage: FC<{
           css={[tw`text-xs text-white/50`, styles.subtitle[theme]]}
         >{`Available Balance: ${(token.token_info?.balance || 0) / 10 ** (token.token_info?.decimals || 0)} ${token.content?.metadata.symbol}`}</span>
       </div>
+
+      <span css={[tw`text-sm text-error`]}>{error}</span>
+
       <div tw="flex justify-between gap-4 mt-8 items-center w-full">
         <button
           type="button"

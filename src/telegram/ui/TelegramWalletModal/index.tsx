@@ -66,7 +66,7 @@ export const TelegramWalletModal: React.FC<ITelegramWalletModal> = ({ onClose })
       id="telegram_wallet_modal"
       ref={contentRef}
       css={[
-        tw`px-4 pt-4 pb-16 w-full flex flex-col rounded-t-xl sm:rounded-xl max-h-[90vh] lg:max-h-[576px] max-w-md items-center justify-center`,
+        tw`px-4 pt-4 pb-14 w-full flex flex-col rounded-t-xl sm:rounded-xl max-h-[90vh] lg:max-h-[576px] max-w-md items-center justify-center`,
         styles.container[theme],
         animateOut ? tw`animate-fade-bottom duration-500` : tw`animate-fade-top`,
       ]}
@@ -79,11 +79,7 @@ export const TelegramWalletModal: React.FC<ITelegramWalletModal> = ({ onClose })
         <div tw="w-full">
           <Header onClose={onCloseAnimated} />
           <div tw="border-t-[1px] border-white/10" />
-          <div
-            onAnimationEnd={handleAnimationEnd}
-            css={[tw`w-full overflow-y-scroll`, animateIn && tw`animate-fade-right duration-500`]}
-            className="hideScrollbar"
-          >
+          <div onAnimationEnd={handleAnimationEnd} css={[tw`w-full`, animateIn && tw`animate-fade-right duration-500`]}>
             {flowComponents[flow]}
           </div>
         </div>
