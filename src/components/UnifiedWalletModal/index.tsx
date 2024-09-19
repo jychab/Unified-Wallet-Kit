@@ -400,18 +400,24 @@ const UnifiedWalletModal: React.FC<IUnifiedWalletModal> = ({ onClose }) => {
     return { highlightedBy: 'TopWallet', highlight: top3, others };
   }, [wallets, previouslyConnected, telegramConfig]);
 
+  const [animateOut, setAnimateOut] = useState(false);
+  const onCloseAnimated = () => {
+    setAnimateOut(true);
+    onClose();
+  };
   const contentRef = useRef<HTMLDivElement>(null);
-  useOutsideClick(contentRef, onClose);
+  useOutsideClick(contentRef, onCloseAnimated);
 
   return (
     <div
       ref={contentRef}
       css={[
-        tw`max-w-md w-full relative flex flex-col overflow-hidden rounded-xl max-h-[90vh] lg:max-h-[576px] transition-height duration-500 ease-in-out `,
+        tw`max-w-md w-full relative flex flex-col overflow-hidden rounded-xl max-h-[90vh] lg:max-h-[576px]`,
         styles.container[theme],
+        animateOut ? tw`animate-fade-bottom duration-500` : tw`animate-fade-top`,
       ]}
     >
-      <Header onClose={onClose} />
+      <Header onClose={onCloseAnimated} />
       <div tw="border-t-[1px] border-white/10" />
       <ListOfWallets list={list} onToggle={onToggle} isOpen={isOpen} />
 

@@ -51,9 +51,8 @@ const ModalDialog: React.FC<{ open: boolean; onClose: () => void } & PropsWithCh
       role="dialog"
       aria-modal="true"
       css={[
-        tw`inset-0 h-screen w-screen flex items-center justify-center bg-black/25 backdrop-blur-sm animate-fade-in cursor-auto z-50 p-0 m-0`,
+        tw`inset-0 h-screen w-screen flex items-end sm:items-center justify-center bg-black/25 backdrop-blur-sm cursor-auto z-50 p-0 m-0 overflow-hidden`,
         `max-width: 100vw; max-height: 100vh;`,
-        isLocalOpen && !open && tw`animate-fade-out opacity-0`,
       ]}
       ref={ref}
     >

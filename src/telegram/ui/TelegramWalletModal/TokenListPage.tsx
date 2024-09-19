@@ -6,7 +6,7 @@ import { TokenList } from './components/TokenList';
 
 const styles: IStandardStyle = {
   walletButton: {
-    light: [tw`bg-[#F9FAFB] hover:bg-black/5`],
+    light: [tw`bg-black text-white hover:bg-black/80`],
     dark: [tw`bg-white/10 hover:bg-white/20 border border-white/10 shadow-lg`],
     jupiter: [tw`bg-white/5 hover:bg-white/20 border border-white/10 shadow-lg`],
   },

@@ -11,6 +11,7 @@ module.exports = {
         'jupiter-jungle-green': '#24AE8F',
         'jupiter-primary': '#FBA43A',
         warning: '#FAA63C',
+        error: `#F43F5E`,
 
         'v2-primary': 'rgba(199, 242, 132, 1)',
         'v2-background': '#304256',
@@ -28,6 +29,14 @@ module.exports = {
         'fade-right': {
           '0%': { opacity: '0.2', transform: 'translateX(50px)' },
           '100%': { opacity: '1', transform: 'translateX(0px)' },
+        },
+        'fade-top': {
+          '0%': { opacity: '0.2', transform: 'translateY(50px)' },
+          '100%': { opacity: '1', transform: 'translateY(0px)' },
+        },
+        'fade-bottom': {
+          '0%': { opacity: '1', transform: 'translateY(0px)' },
+          '100%': { opacity: '0', transform: 'translateY(50px)' },
         },
         'fade-in': {
           '0%': {
@@ -47,7 +56,9 @@ module.exports = {
         },
       },
       animation: {
-        'fade-right': 'fade-right 0.15s ease-in-out forwards',
+        'fade-top': 'fade-top 0.15s ease-in-out',
+        'fade-bottom': 'fade-bottom 0.15s ease-in-out',
+        'fade-right': 'fade-right 0.15s ease-in-out',
         'fade-in': 'fade-in 0.15s ease-in-out',
         'fade-out': 'fade-out 0.15s ease-out',
         shine: 'shine 3.5s linear infinite',

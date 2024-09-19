@@ -7,7 +7,7 @@ import { cache, getAssetsByOwner } from '../../../helpers';
 
 const styles: IStandardStyle = {
   container: {
-    light: [tw`text-black !bg-white shadow-xl`],
+    light: [tw`text-black !bg-white border border-black/10`],
     dark: [tw`text-white !bg-[#3A3B43] border border-white/10`],
     jupiter: [tw`text-white bg-[rgb(49, 62, 76)]`],
   },

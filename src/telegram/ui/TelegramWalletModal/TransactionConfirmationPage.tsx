@@ -9,7 +9,7 @@ import { cacheKey } from './components/TokenList';
 
 const styles: IStandardStyle = {
   container: {
-    light: [tw`text-black !bg-white shadow-xl`],
+    light: [tw`text-black !bg-white border border-black/10`],
     dark: [tw`text-white !bg-[#3A3B43] border border-white/10`],
     jupiter: [tw`text-white bg-[rgb(49, 62, 76)]`],
   },
@@ -24,7 +24,7 @@ const styles: IStandardStyle = {
     jupiter: [tw`hover:shadow-2xl hover:bg-white/10`],
   },
   walletButton: {
-    light: [tw`bg-[#F9FAFB] hover:bg-black/5`],
+    light: [tw`bg-black text-white hover:bg-black/80`],
     dark: [tw`bg-white/10 hover:bg-white/20 border border-white/10 shadow-lg`],
     jupiter: [tw`bg-white/5 hover:bg-white/20 border border-white/10 shadow-lg`],
   },
@@ -60,7 +60,7 @@ export const TransactionConfirmationPage: FC<{ setFlow: (flow: ITelegramWalletFl
   }
 
   return (
-    <div tw="flex flex-col items-center justify-center w-full gap-4 pt-4">
+    <div tw="flex flex-col items-center justify-center w-full gap-4 py-4">
       {txSig === 'loading' ? (
         <LoadingSpinner twStyle={tw`w-20 h-20 animate-spin text-gray-600 fill-blue-600`} />
       ) : (

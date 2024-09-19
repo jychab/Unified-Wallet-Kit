@@ -22,7 +22,7 @@ export function createAdapterSimulationCallback(
       | {
           transaction?: Transaction | VersionedTransaction;
           error?: string;
-          message?:string;
+          message?: string;
           onApproval: () => void;
           onCancel: () => void;
         }
@@ -31,16 +31,15 @@ export function createAdapterSimulationCallback(
   >,
   setShowWalletModal: (showWalletModal: boolean) => void,
 ) {
-  const simulationCallback = ( transaction?: Transaction | VersionedTransaction,
-    message?:string) => {
+  const simulationCallback = (transaction?: Transaction | VersionedTransaction, message?: string) => {
     return new Promise(
       (resolve: (value: { result: boolean; onCompletion?: () => void; onError?: (error: string) => void }) => any) => {
         let timeoutId;
 
         const onCompletion = () => {
           console.log('Transaction is signed');
-          setTransactionSimulation(undefined);
           setShowWalletModal(false); // Close modal
+          setTransactionSimulation(undefined);
         };
         const onError = (error: string) => {
           console.log('Error Occurred while signing transaction');
@@ -60,21 +59,20 @@ export function createAdapterSimulationCallback(
         };
 
         console.log('Setting transaction simulation and opening modal');
-        setShowWalletModal(true);
         if (transaction) {
           setTransactionSimulation({
             transaction,
             onApproval,
             onCancel,
           });
-        }else if (message){
+        } else if (message) {
           setTransactionSimulation({
             message,
             onApproval,
             onCancel,
           });
         }
-       
+        setShowWalletModal(true);
         // Set up a timeout to automatically resolve after 1 minute (60000ms)
         timeoutId = setTimeout(() => {
           console.log('Transaction timed out after 1 minute');
@@ -281,4 +279,3 @@ export function getInitData() {
   if (!initDataRaw) throw Error('Telegram User not found.');
   return initDataRaw;
 }
-

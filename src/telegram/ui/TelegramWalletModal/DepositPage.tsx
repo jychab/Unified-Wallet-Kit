@@ -49,7 +49,7 @@ export const DepositPage: FC<{
   const { theme } = useUnifiedWalletContext();
   const { publicKey } = useUnifiedWallet();
   return (
-    <div tw="flex flex-col gap-4 pt-4">
+    <div tw="flex flex-col gap-4 py-4">
       <div tw="flex justify-between items-center">
         <button
           type="button"

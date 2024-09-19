@@ -31,12 +31,17 @@ export const TelegramWalletModal: React.FC<ITelegramWalletModal> = ({ onClose })
   const [flow, setFlow] = useState<ITelegramWalletFlow>('Main');
   const [animateIn, setAnimateIn] = useState(false);
   const [selectedToken, setSelectedToken] = useState<any>();
+  const [animateOut, setAnimateOut] = useState(false);
+  const onCloseAnimated = () => {
+    setAnimateOut(true);
+    onClose();
+  };
   const contentRef = useRef<HTMLDivElement>(null);
   useOutsideClick(contentRef, () => {
     if (simulatedTransaction?.onCancel) {
       simulatedTransaction.onCancel();
     }
-    onClose();
+    onCloseAnimated();
   });
 
   const setFlowAnimated = useCallback((flow: ITelegramWalletFlow) => {
@@ -61,11 +66,10 @@ export const TelegramWalletModal: React.FC<ITelegramWalletModal> = ({ onClose })
       id="telegram_wallet_modal"
       ref={contentRef}
       css={[
-        tw`p-4 w-full flex flex-col rounded-xl max-h-[90vh] lg:max-h-[576px] max-w-md items-center justify-center`,
+        tw`px-4 pt-4 pb-16 w-full flex flex-col rounded-t-xl sm:rounded-xl max-h-[90vh] lg:max-h-[576px] max-w-md items-center justify-center`,
         styles.container[theme],
+        animateOut ? tw`animate-fade-bottom duration-500` : tw`animate-fade-top`,
       ]}
-      onAnimationEnd={handleAnimationEnd}
-      className="hideScrollbar"
     >
       {txSig ? (
         <TransactionConfirmationPage setFlow={setFlowAnimated} />
@@ -73,9 +77,13 @@ export const TelegramWalletModal: React.FC<ITelegramWalletModal> = ({ onClose })
         <TransactionSimulationPage />
       ) : (
         <div tw="w-full">
-          <Header onClose={onClose} />
+          <Header onClose={onCloseAnimated} />
           <div tw="border-t-[1px] border-white/10" />
-          <div css={[tw`w-full overflow-y-scroll`, animateIn && tw`animate-fade-right duration-500`]}>
+          <div
+            onAnimationEnd={handleAnimationEnd}
+            css={[tw`w-full overflow-y-scroll`, animateIn && tw`animate-fade-right duration-500`]}
+            className="hideScrollbar"
+          >
             {flowComponents[flow]}
           </div>
         </div>

@@ -32,13 +32,13 @@ export class TelegramWalletImpl extends EventEmitter<TelegramWalletEvents> imple
   config: ITelegramConfig;
   simulationCallback: (
     transaction?: Transaction | VersionedTransaction,
-    message?:string,
+    message?: string,
   ) => Promise<{ result: boolean; onCompletion?: () => void; onError?: (error: string) => void }>;
   constructor(
     config: ITelegramConfig,
     simulationCallback: (
       transaction?: Transaction | VersionedTransaction,
-    message?:string,
+      message?: string,
     ) => Promise<{ result: boolean; onCompletion?: () => void; onError?: (error: string) => void }>,
   ) {
     super();
@@ -75,7 +75,7 @@ export class TelegramWalletImpl extends EventEmitter<TelegramWalletEvents> imple
     try {
       const initDataRaw = getInitData();
       result = await this.simulationCallback(transaction);
-      if (!result.result) throw new Error('Transaction was not approved.');
+      if (!result.result) throw new Error('User Rejected the Signing Request');
       // Sign the transaction using Telegram's authentication or your own signing mechanism
       const [signedTransaction] = await signTransactionOnBackend(
         this.config.backendEndpoint,
@@ -99,7 +99,7 @@ export class TelegramWalletImpl extends EventEmitter<TelegramWalletEvents> imple
     try {
       const initDataRaw = getInitData();
       result = await Promise.all(transactions.map((transaction) => this.simulationCallback(transaction)));
-      if (result.some((x) => !x.result)) throw new Error('Transaction was not approved.');
+      if (result.some((x) => !x.result)) throw new Error('User Rejected the Signing Request');
       // Sign all transactions
       const signedTransactions = signTransactionOnBackend(this.config.backendEndpoint, transactions, initDataRaw);
       if (result[0].onCompletion) {
@@ -122,7 +122,7 @@ export class TelegramWalletImpl extends EventEmitter<TelegramWalletEvents> imple
     try {
       const initDataRaw = getInitData();
       result = await this.simulationCallback(transaction);
-      if (!result.result) throw new Error('Transaction was not approved.');
+      if (!result.result) throw new Error('User Rejected the Signing Request');
       const [signedTransaction] = await signTransactionOnBackend(
         this.config.backendEndpoint,
         [transaction],
@@ -147,8 +147,8 @@ export class TelegramWalletImpl extends EventEmitter<TelegramWalletEvents> imple
       // Sign the message using the user's Telegram wallet
       const initDataRaw = getInitData();
       const text = new TextDecoder().decode(message);
-      result = await this.simulationCallback(undefined,text );
-      if (!result.result) throw new Error('Message was not signed.');
+      result = await this.simulationCallback(undefined, text);
+      if (!result.result) throw new Error('User Rejected the Signing Request');
       const signature = await signMessageOnBackend(this.config.backendEndpoint, text, initDataRaw);
       if (result.onCompletion) {
         result.onCompletion();
@@ -162,4 +162,3 @@ export class TelegramWalletImpl extends EventEmitter<TelegramWalletEvents> imple
     }
   }
 }
-

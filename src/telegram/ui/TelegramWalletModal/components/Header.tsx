@@ -52,7 +52,7 @@ export const Header: FC<{ onClose: () => void; showProfilePic?: boolean }> = mem
         ) : (
           <div />
         )}
-        <button tw="focus-within:outline-none" onClick={onClose}>
+        <button css={[tw`focus-within:outline-none`]} onClick={onClose}>
           <CloseIcon width={14} height={14} />
         </button>
       </div>

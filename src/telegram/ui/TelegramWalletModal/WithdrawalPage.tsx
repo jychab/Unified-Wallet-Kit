@@ -1,4 +1,4 @@
-import { createTransferCheckedInstruction, getAssociatedTokenAddress } from '@solana/spl-token';
+import { createTransferCheckedInstruction, getAssociatedTokenAddressSync } from '@solana/spl-token';
 import { Connection, PublicKey, SystemProgram } from '@solana/web3.js';
 import { FC, FormEvent, useState } from 'react';
 import tw from 'twin.macro';
@@ -12,7 +12,7 @@ import { NATIVE_SOL } from './components/TokenList';
 
 const styles: IStandardStyle = {
   container: {
-    light: [tw`text-black !bg-white shadow-xl`],
+    light: [tw`text-black !bg-white border border-black/10`],
     dark: [tw`text-white !bg-[#3A3B43] border border-white/10`],
     jupiter: [tw`text-white bg-[rgb(49, 62, 76)]`],
   },
@@ -27,7 +27,7 @@ const styles: IStandardStyle = {
     jupiter: [tw`hover:shadow-2xl hover:bg-white/10`],
   },
   walletButton: {
-    light: [tw`bg-[#F9FAFB] hover:bg-black/5`],
+    light: [tw`bg-black text-white hover:bg-black/80`],
     dark: [tw`bg-white/10 hover:bg-white/20 border border-white/10 shadow-lg`],
     jupiter: [tw`bg-white/5 hover:bg-white/20 border border-white/10 shadow-lg`],
   },
@@ -91,13 +91,8 @@ export const WithdrawalPage: FC<{
         tx = await buildAndSignTransaction([transferIx], publicKey, signTransaction, connection);
       } else {
         const tokenProgram = new PublicKey(token.token_info.token_program);
-        const source = await getAssociatedTokenAddress(
-          new PublicKey(token.id),
-          publicKey,
-          false,
-          tokenProgram,
-        );
-        const destination = await getAssociatedTokenAddress(
+        const source = getAssociatedTokenAddressSync(new PublicKey(token.id), publicKey, false, tokenProgram);
+        const destination = getAssociatedTokenAddressSync(
           new PublicKey(token.id),
           new PublicKey(recipient),
           true,
@@ -130,7 +125,7 @@ export const WithdrawalPage: FC<{
   };
 
   return (
-    <form onSubmit={handleSubmit} tw="flex flex-col items-center justify-center gap-4 pt-4">
+    <form onSubmit={handleSubmit} tw="flex flex-col items-center justify-center gap-4 py-4">
       <div tw="flex w-full justify-between items-center">
         <button
           type="button"

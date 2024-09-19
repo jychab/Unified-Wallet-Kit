@@ -152,10 +152,17 @@ export const TelegramOnboardingFlow = ({ onClose }: { onClose: () => void }) => 
   const { setShowWalletModal, setTransactionSimulation } = useTelegramWalletContext();
   const [flow, setFlow] = useState<ITelegramOnboardingFlow>('Onboarding');
   const [animateIn, setAnimateIn] = useState(false);
-  const contentRef = useRef<HTMLDivElement>(null);  
-  useOutsideClick(contentRef, onClose);
-  
+  const [animateOut, setAnimateOut] = useState(false);
+  const onCloseAnimated = () => {
+    setAnimateOut(true);
+    onClose();
+  };
+
+  const contentRef = useRef<HTMLDivElement>(null);
+  useOutsideClick(contentRef, onCloseAnimated);
+
   const setFlowAnimated = useCallback((flow: ITelegramOnboardingFlow) => {
+    setAnimateOut(false); // Ensure exit animation is reset
     setFlow(flow);
     contentRef.current?.scrollTo(0, 0); // Scroll to top when flow changes
     setAnimateIn(true);
@@ -166,22 +173,20 @@ export const TelegramOnboardingFlow = ({ onClose }: { onClose: () => void }) => 
   };
   const botUsername = useMemo(() => telegramConfig?.botUsername || '', [telegramConfig]);
 
- 
-
   return (
     <div
-      id=' id="telegram_onboarding_modal"'
+      id="telegram_onboarding_modal"
       ref={contentRef}
       css={[
-        tw`animate-fade-in p-4 w-full flex flex-col rounded-xl max-h-[90vh] lg:max-h-[576px] max-w-md items-center justify-center`,
+        tw`p-4 w-full flex flex-col rounded-xl max-h-[90vh] lg:max-h-[576px] max-w-md items-center  justify-center`,
         styles.container[theme],
+        animateOut ? tw`animate-fade-bottom duration-500` : tw`animate-fade-top duration-500`,
       ]}
-      onAnimationEnd={handleAnimationEnd}
       className="hideScrollbar"
     >
       <div tw="flex flex-col justify-center items-center w-full">
-        <Header showProfilePic={false} onClose={onClose} />
-        <div css={[tw`w-full`, animateIn && tw`animate-fade-right duration-500`]}>
+        <Header showProfilePic={false} onClose={onCloseAnimated} />
+        <div onAnimationEnd={handleAnimationEnd} css={[tw`w-full`, animateIn && tw`animate-fade-right duration-500`]}>
           {flow === 'Onboarding' ? (
             <TelegramOnboardingIntro flow={flow} setFlow={setFlowAnimated} botUsername={botUsername || ''} />
           ) : null}
@@ -200,7 +205,7 @@ export const TelegramOnboardingFlow = ({ onClose }: { onClose: () => void }) => 
                       createAdapterSimulationCallback(setTransactionSimulation, setShowWalletModal),
                     ),
                   );
-                  onClose();
+                  onCloseAnimated();
                 }
               }}
             />
@@ -220,7 +225,7 @@ export const TelegramOnboardingFlow = ({ onClose }: { onClose: () => void }) => 
                       createAdapterSimulationCallback(setTransactionSimulation, setShowWalletModal),
                     ),
                   );
-                  onClose();
+                  onCloseAnimated();
                 }
               }}
             />
