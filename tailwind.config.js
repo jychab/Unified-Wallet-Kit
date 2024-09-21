@@ -12,6 +12,7 @@ module.exports = {
         'jupiter-primary': '#FBA43A',
         warning: '#FAA63C',
         error: `#F43F5E`,
+        success: `#A3E635`,
 
         'v2-primary': 'rgba(199, 242, 132, 1)',
         'v2-background': '#304256',

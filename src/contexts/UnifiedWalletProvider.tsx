@@ -51,13 +51,15 @@ const UnifiedWalletContextProvider: React.FC<
     config: IUnifiedWalletConfig;
   } & PropsWithChildren
 > = ({ config, children }) => {
-  const { setShowWalletModal, showWalletModal, showOnboardingModal, setShowOnboardingModal } =
+  const { setShowWalletModal, showWalletModal, showOnboardingModal, setShowOnboardingModal, setTransactionSimulation } =
     useTelegramWalletContext();
   const { publicKey, wallet, select, connect } = useUnifiedWallet();
   const previousPublicKey = usePrevious<PublicKey | null>(publicKey);
   const previousWallet = usePrevious<Wallet | null>(wallet);
+
   // Weird quirks for autoConnect to require select and connect
   const [nonAutoConnectAttempt, setNonAutoConnectAttempt] = useState(false);
+
   useEffect(() => {
     if (nonAutoConnectAttempt && !config.autoConnect && wallet?.adapter.name) {
       try {
@@ -156,6 +158,33 @@ const UnifiedWalletContextProvider: React.FC<
     }
   }, [wallet, publicKey, previousWallet]);
 
+  // we use another variable here because we want the exit animation to trigger first before closingt he modal
+  const [showWallet, setShowWallet] = useState(false);
+  const [animateOut, setAnimateOut] = useState(false);
+  useEffect(() => {
+    if (showWalletModal) {
+      setShowWallet(true);
+    } else {
+      onCloseAnimated();
+    }
+  }, [showWalletModal]);
+
+  const onCloseAnimated = () => {
+    setShowWallet(false);
+    setAnimateOut(true);
+  };
+
+  useEffect(() => {
+    if (!showWallet) {
+      const resetAnimation = setTimeout(() => {
+        setTransactionSimulation(undefined);
+        setAnimateOut(false);
+      }, 500);
+
+      return () => clearTimeout(resetAnimation);
+    }
+  }, [showWallet]);
+
   return (
     <UnifiedWalletContext.Provider
       value={{
@@ -174,12 +203,12 @@ const UnifiedWalletContextProvider: React.FC<
         <UnifiedWalletModal onClose={() => setShowModal(false)} />
       </ModalDialog>
       {config.telegramConfig && (
-        <ModalDialog open={showWalletModal && !showOnboardingModal} onClose={() => setShowWalletModal(false)}>
-          <TelegramWalletModal onClose={() => setShowWalletModal(false)} />
+        <ModalDialog open={showWallet} onClose={() => setShowWalletModal(false)}>
+          {showWallet && <TelegramWalletModal onClose={() => setShowWalletModal(false)} animateOut={animateOut} />}
         </ModalDialog>
       )}
       {config.telegramConfig && (
-        <ModalDialog open={showOnboardingModal && !showWalletModal} onClose={() => setShowOnboardingModal(false)}>
+        <ModalDialog open={showOnboardingModal && !showWallet} onClose={() => setShowOnboardingModal(false)}>
           <TelegramOnboardingFlow onClose={() => setShowOnboardingModal(false)} />
         </ModalDialog>
       )}

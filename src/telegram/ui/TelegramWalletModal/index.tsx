@@ -20,28 +20,24 @@ const styles: IStandardStyle = {
 };
 
 interface ITelegramWalletModal {
+  animateOut: boolean;
   onClose: () => void;
 }
 
 export type ITelegramWalletFlow = 'Main' | 'Deposit' | 'TokenList' | 'Withdrawal';
 
-export const TelegramWalletModal: React.FC<ITelegramWalletModal> = ({ onClose }) => {
+export const TelegramWalletModal: React.FC<ITelegramWalletModal> = ({ onClose, animateOut }) => {
   const { theme } = useUnifiedWalletContext();
   const { simulatedTransaction, txSig } = useTelegramWalletContext();
   const [flow, setFlow] = useState<ITelegramWalletFlow>('Main');
   const [animateIn, setAnimateIn] = useState(false);
   const [selectedToken, setSelectedToken] = useState<any>();
-  const [animateOut, setAnimateOut] = useState(false);
-  const onCloseAnimated = () => {
-    setAnimateOut(true);
-    onClose();
-  };
   const contentRef = useRef<HTMLDivElement>(null);
   useOutsideClick(contentRef, () => {
     if (simulatedTransaction?.onCancel) {
       simulatedTransaction.onCancel();
     }
-    onCloseAnimated();
+    onClose();
   });
 
   const setFlowAnimated = useCallback((flow: ITelegramWalletFlow) => {
@@ -68,7 +64,7 @@ export const TelegramWalletModal: React.FC<ITelegramWalletModal> = ({ onClose })
       css={[
         tw`px-4 pt-4 pb-14 w-full flex flex-col rounded-t-xl sm:rounded-xl max-h-[90vh] lg:max-h-[576px] max-w-md items-center justify-center`,
         styles.container[theme],
-        animateOut ? tw`animate-fade-bottom duration-500` : tw`animate-fade-top`,
+        animateOut ? tw`animate-fade-bottom duration-500` : tw`animate-fade-top duration-500`,
       ]}
     >
       {txSig ? (
@@ -77,7 +73,7 @@ export const TelegramWalletModal: React.FC<ITelegramWalletModal> = ({ onClose })
         <TransactionSimulationPage />
       ) : (
         <div tw="w-full">
-          <Header onClose={onCloseAnimated} />
+          <Header onClose={onClose} />
           <div tw="border-t-[1px] border-white/10" />
           <div onAnimationEnd={handleAnimationEnd} css={[tw`w-full`, animateIn && tw`animate-fade-right duration-500`]}>
             {flowComponents[flow]}

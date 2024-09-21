@@ -5,12 +5,19 @@ import {
   Connection,
   PublicKey,
   SystemProgram,
+  Transaction,
   VersionedTransaction,
 } from '@solana/web3.js';
 import { FC, useEffect, useState } from 'react';
 import tw from 'twin.macro';
-import { IStandardStyle, useUnifiedWalletContext } from '../../../contexts/UnifiedWalletContext';
-import { useTelegramWalletContext } from '../../contexts/TelegramWalletContext';
+import {
+  IStandardStyle,
+  IUnifiedTheme,
+  useUnifiedWallet,
+  useUnifiedWalletContext,
+} from '../../../contexts/UnifiedWalletContext';
+import { getAssetsBatch } from '../../../telegram/helpers';
+import { ITelegramConfig, useTelegramWalletContext } from '../../contexts/TelegramWalletContext';
 import { LoadingSpinner } from './components/LoadingSpinner';
 
 const styles: IStandardStyle = {
@@ -51,49 +58,134 @@ const styles: IStandardStyle = {
   },
 };
 
+async function fetchSimulationResults(
+  telegramConfig: ITelegramConfig,
+  simulatedTransaction: {
+    transaction?: Transaction | VersionedTransaction;
+    error?: string;
+    message?: string;
+    onApproval: () => void;
+    onCancel: () => void;
+  },
+  publicKey: PublicKey,
+  setNativeChanges: (arg0: any) => void,
+  setTokenChanges: (arg0: any) => void,
+  setError: (arg0: any) => void,
+  setSimulationLoading: (arg0: any) => void,
+) {
+  try {
+    const connection = new Connection(telegramConfig.rpcEndpoint);
+    const simulationResult = await getSimulationResults(
+      connection,
+      simulatedTransaction.transaction as VersionedTransaction,
+    );
+
+    const ownBalanceChanges = filterAndProcessAssets(simulationResult, publicKey);
+    if (ownBalanceChanges.length === 0) {
+      throw new Error('No Changes in Token Balances Found.');
+    }
+
+    // Handling for Native changes (SOL)
+    const nativeChanges = ownBalanceChanges
+      .filter((x) => x.isNativeAsset)
+      .map((x) => ({
+        ...x,
+        amount: x.amount / 10 ** 9,
+        symbol: 'SOL',
+        imageUrl: 'https://upload.wikimedia.org/wikipedia/en/thumb/b/b9/Solana_logo.png/252px-Solana_logo.png',
+      }));
+
+    setNativeChanges(nativeChanges);
+
+    // Handling for Token changes
+    const tokenChanges = ownBalanceChanges.filter((x) => !x.isNativeAsset && x.mint);
+    if (tokenChanges.length > 0) {
+      const mintAddresses = tokenChanges.map((x) => x.mint!.toBase58());
+      const assets = await getAssetsBatch(telegramConfig.rpcEndpoint, mintAddresses);
+      if (assets && assets.length > 0) {
+        const changes = assets
+          .map((asset: any) => {
+            const token = tokenChanges.find((y) => y.mint?.toBase58() === asset.id);
+            if (!token) return null;
+            return {
+              ...token,
+              amount: token.amount / 10 ** asset.token_info.decimals,
+              symbol: asset.content?.metadata?.symbol,
+              imageUrl: asset.content?.links?.image,
+            };
+          })
+          .filter((x: any) => !!x);
+
+        setTokenChanges(changes);
+      } else {
+        throw new Error('Error occurred while fetching assets metadata');
+      }
+    }
+  } catch (e) {
+    setError(`${e}`);
+  } finally {
+    setSimulationLoading(false);
+  }
+}
+
 export const TransactionSimulationPage: FC = () => {
   const { theme, telegramConfig } = useUnifiedWalletContext();
   const { simulatedTransaction } = useTelegramWalletContext();
+  const { publicKey } = useUnifiedWallet();
   const [loading, setLoading] = useState(false);
+  const [simulationLoading, setSimulationLoading] = useState(false);
   const [error, setError] = useState<string>();
-  const [simulationResult, setSimulationResult] = useState<string>();
+  const [nativeChanges, setNativeChanges] = useState<FilteredResult[]>([]);
+  const [tokenChanges, setTokenChanges] = useState<FilteredResult[]>([]);
 
   useEffect(() => {
-    if (loading && !simulatedTransaction) {
-      setLoading(false);
-    } else if (loading && simulatedTransaction?.error) {
+    if (loading && simulatedTransaction?.error) {
       setLoading(false);
       setError(simulatedTransaction?.error);
     }
-  }, [simulatedTransaction]);
+  }, [simulatedTransaction?.error, loading]);
 
   useEffect(() => {
-    if (telegramConfig && simulatedTransaction?.transaction) {
-      getSimulationResults(
-        new Connection(telegramConfig?.rpcEndpoint),
-        simulatedTransaction.transaction as VersionedTransaction,
-      ).then((x) => {
-        setSimulationResult(JSON.stringify(x, null, 2));
-      });
+    if (telegramConfig?.rpcEndpoint && simulatedTransaction?.transaction && publicKey) {
+      setSimulationLoading(true);
+      fetchSimulationResults(
+        telegramConfig,
+        simulatedTransaction,
+        publicKey,
+        setNativeChanges,
+        setTokenChanges,
+        setError,
+        setSimulationLoading,
+      );
     }
-  }, [telegramConfig, simulatedTransaction?.transaction]);
+  }, [telegramConfig, simulatedTransaction?.transaction, publicKey]);
 
   return (
     <div tw="flex flex-col w-full items-center justify-center gap-4 py-4">
       <span css={[tw`text-white/50 text-center text-xl`, styles.text[theme]]}>
         {error ? 'Unexpected Error' : simulatedTransaction?.message ? `Approve Message` : 'Approve Transaction'}
       </span>
-      <span
-        css={[
-          tw`break-words flex-wrap w-full text-left p-4 border rounded-lg overflow-y-scroll max-h-[270px]`,
-          styles.subtitle[theme],
-          styles.container[theme],
-          error ? tw`text-error` : tw`text-white/50`,
-        ]}
+      <div
+        css={[tw`w-full p-4 border rounded-lg overflow-y-scroll max-h-[270px]`, styles.container[theme]]}
         className="hideScrollbar"
       >
-        {error || simulatedTransaction?.message || simulationResult}
-      </span>
+        {error || simulatedTransaction?.message || simulationLoading ? (
+          <span
+            css={[
+              tw`break-words flex-wrap w-full text-left`,
+              styles.subtitle[theme],
+              error ? tw`text-error` : tw`text-white/50`,
+            ]}
+          >
+            {error || simulatedTransaction?.message || (simulationLoading && 'Transaction Simulation is loading...')}
+          </span>
+        ) : (
+          <div tw="flex flex-col gap-2">
+            {nativeChanges?.map((x, index) => <SimulationResult key={'native' + index} result={x} theme={theme} />)}
+            {tokenChanges?.map((x, index) => <SimulationResult key={'spl-token' + index} result={x} theme={theme} />)}
+          </div>
+        )}
+      </div>
       <div tw="flex justify-between gap-4 mt-4 items-center w-full">
         <button
           type="button"
@@ -132,10 +224,32 @@ export const TransactionSimulationPage: FC = () => {
   );
 };
 
+const SimulationResult: FC<{ result: FilteredResult; theme: IUnifiedTheme }> = ({ result, theme }) => {
+  return (
+    <div tw="flex items-center w-full justify-start gap-2">
+      <span css={[styles.subtitle[theme], result.amount > 0 ? tw`text-success` : tw`text-error`]}>
+        {result.amount > 0 ? '+' : '-'}
+        {Math.abs(result.amount)}
+      </span>
+      {result.imageUrl && (
+        <div tw="w-8 h-8 relative overflow-hidden rounded-full">
+          <img
+            tw="object-cover w-full h-full"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            alt={result.symbol || 'Token Image'}
+            src={result.imageUrl}
+          />
+        </div>
+      )}
+      <span css={[styles.subtitle[theme]]}>{result.symbol}</span>
+    </div>
+  );
+};
+
 export async function getSimulationResults(connection: Connection, transaction: VersionedTransaction) {
   const accountKeys = transaction.message.staticAccountKeys.filter(
     (x) =>
-      x.toBase58() != TOKEN_2022_PROGRAM_ID.toBase58() &&
+      x.toBase58() !== TOKEN_2022_PROGRAM_ID.toBase58() &&
       x.toBase58() !== TOKEN_PROGRAM_ID.toBase58() &&
       x.toBase58() !== ComputeBudgetProgram.programId.toBase58() &&
       x.toBase58() !== SystemProgram.programId.toBase58(),
@@ -151,7 +265,9 @@ export async function getSimulationResults(connection: Connection, transaction: 
       },
     })
   ).value;
-
+  if (simulationResults.err) {
+    throw new Error(JSON.stringify(simulationResults.err));
+  }
   const simulatedAccounts = simulationResults.accounts || [];
   const preAccountInfo = await connection.getMultipleAccountsInfo(accountKeys);
   // Reassemble results in the original order
@@ -161,7 +277,7 @@ export async function getSimulationResults(connection: Connection, transaction: 
     if (!postAccount) return;
     if (preAccount?.owner.toBase58() === TOKEN_2022_PROGRAM_ID.toBase58()) {
       try {
-        const preAccountAmount = unpackAccount(x, preAccount, TOKEN_2022_PROGRAM_ID).amount;
+        const preAccountUnpacked = unpackAccount(x, preAccount, TOKEN_2022_PROGRAM_ID);
         const postAccountAmount = unpackAccount(
           x,
           {
@@ -176,17 +292,18 @@ export async function getSimulationResults(connection: Connection, transaction: 
         // Handle TOKEN_PROGRAM_ID accounts
 
         return {
-          pre: Number(preAccountAmount),
+          pre: Number(preAccountUnpacked.amount),
           post: Number(postAccountAmount),
-          x,
+          mint: preAccountUnpacked.mint,
+          owner: preAccountUnpacked.owner,
           tokenProgram: TOKEN_2022_PROGRAM_ID,
-        };
+        } as Asset;
       } catch (e) {
         return;
       }
     } else if (preAccount?.owner.toBase58() === TOKEN_PROGRAM_ID.toBase58()) {
       try {
-        const preAccountAmount = unpackAccount(x, preAccount, TOKEN_PROGRAM_ID).amount;
+        const preAccountUnpacked = unpackAccount(x, preAccount, TOKEN_PROGRAM_ID);
         const postAccountAmount = unpackAccount(
           x,
           {
@@ -199,21 +316,69 @@ export async function getSimulationResults(connection: Connection, transaction: 
           TOKEN_PROGRAM_ID,
         ).amount;
         return {
-          pre: Number(preAccountAmount),
+          pre: Number(preAccountUnpacked.amount),
           post: Number(postAccountAmount),
-          x,
+          mint: preAccountUnpacked.mint,
+          owner: preAccountUnpacked.owner,
           tokenProgram: TOKEN_PROGRAM_ID,
-        };
+        } as Asset;
       } catch (e) {
         return;
       }
     } else {
       return {
-        preLamport: preAccount?.lamports || 0,
-        postLamport: postAccount?.lamports || preAccount?.lamports || 0,
-      };
+        preLamports: preAccount?.lamports || 0,
+        postLamports: postAccount?.lamports || preAccount?.lamports || 0,
+        owner: x,
+        decimals: 9,
+      } as Asset;
     }
   });
 
-  return tokenBalances;
+  return tokenBalances.filter((x) => !!x);
+}
+
+interface Asset {
+  pre?: number;
+  post?: number;
+  preLamports?: number;
+  postLamports?: number;
+  mint?: PublicKey;
+  owner: PublicKey;
+  tokenProgram?: PublicKey;
+}
+
+interface FilteredResult {
+  symbol?: string;
+  imageUrl?: string;
+  mint: PublicKey | undefined;
+  isNativeAsset: boolean;
+  amount: number;
+}
+
+function filterAndProcessAssets(assets: Asset[], ownerPublicKey: PublicKey): FilteredResult[] {
+  return assets
+    .filter((asset) => asset.owner.equals(ownerPublicKey)) // Filter by owner
+    .map((asset) => {
+      const isNativeAsset = !asset.tokenProgram; // Check if it's a native asset
+      let amount = 0;
+
+      if (isNativeAsset) {
+        // Native asset: use preLamports and postLamports
+        if (asset.preLamports !== undefined && asset.postLamports !== undefined) {
+          amount = asset.postLamports - asset.preLamports;
+        }
+      } else {
+        // Token asset: use pre and post fields
+        if (asset.pre !== undefined && asset.post !== undefined) {
+          amount = asset.post - asset.pre;
+        }
+      }
+
+      return {
+        mint: asset.mint,
+        isNativeAsset,
+        amount: amount, // Return the absolute value of the amount
+      };
+    });
 }

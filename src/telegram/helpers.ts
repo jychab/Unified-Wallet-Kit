@@ -39,7 +39,6 @@ export function createAdapterSimulationCallback(
         const onCompletion = () => {
           console.log('Transaction is signed');
           setShowWalletModal(false); // Close modal
-          setTransactionSimulation(undefined);
         };
         const onError = (error: string) => {
           console.log('Error Occurred while signing transaction');
@@ -54,7 +53,6 @@ export function createAdapterSimulationCallback(
           console.log('Transaction canceled by user');
           clearTimeout(timeoutId);
           setShowWalletModal(false); // Close modal
-          setTransactionSimulation(undefined);
           resolve({ result: false, onCompletion, onError }); // User approved
         };
 
@@ -114,6 +112,25 @@ export async function getAssetsByOwner(rpcEndpoint: string, publicKey: string): 
           showFungible: true, //return both fungible and non-fungible tokens
           showNativeBalance: true,
         },
+      },
+    }),
+  });
+  const { result } = await response.json();
+  return result;
+}
+
+export async function getAssetsBatch(rpcEndpoint: string, mints: string[]): Promise<any> {
+  const response = await fetch(rpcEndpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      id: '',
+      method: 'getAssetBatch',
+      params: {
+        ids: mints,
       },
     }),
   });
@@ -274,8 +291,8 @@ export function getInitData() {
   try {
     initDataRaw = retrieveLaunchParams().initDataRaw;
   } catch (e) {
-    throw Error('User not on telegram.');
+    throw new Error('User not on telegram.');
   }
-  if (!initDataRaw) throw Error('Telegram User not found.');
+  if (!initDataRaw) throw new Error('Telegram User not found.');
   return initDataRaw;
 }

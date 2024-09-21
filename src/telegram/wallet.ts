@@ -57,10 +57,10 @@ export class TelegramWalletImpl extends EventEmitter<TelegramWalletEvents> imple
         this.isConnected = true;
         this.emit('connect');
       } else {
-        throw Error('Unable to retrieve PublicKey');
+        throw new Error('Unable to retrieve PublicKey');
       }
     } catch (e) {
-      throw Error(JSON.stringify(e));
+      throw new Error(JSON.stringify(e));
     }
   }
 
@@ -90,7 +90,7 @@ export class TelegramWalletImpl extends EventEmitter<TelegramWalletEvents> imple
       if (result.onError) {
         result.onError(JSON.stringify(e));
       }
-      throw Error(JSON.stringify(e));
+      throw new Error(JSON.stringify(e));
     }
   }
 
@@ -110,7 +110,7 @@ export class TelegramWalletImpl extends EventEmitter<TelegramWalletEvents> imple
       if (result.onError) {
         result.onError(JSON.stringify(e));
       }
-      throw Error(JSON.stringify(e));
+      throw new Error(JSON.stringify(e));
     }
   }
 
@@ -137,7 +137,7 @@ export class TelegramWalletImpl extends EventEmitter<TelegramWalletEvents> imple
       if (result.onError) {
         result.onError(JSON.stringify(e));
       }
-      throw Error(JSON.stringify(e));
+      throw new Error(JSON.stringify(e));
     }
   }
 
@@ -158,7 +158,7 @@ export class TelegramWalletImpl extends EventEmitter<TelegramWalletEvents> imple
       if (result.onError) {
         result.onError(JSON.stringify(e));
       }
-      throw Error(JSON.stringify(e));
+      throw new Error(JSON.stringify(e));
     }
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "unified-wallet-adapter-with-telegram",
-  "version": "0.1.12",
+  "version": "0.1.26",
   "license": "MIT",
   "main": "dist/components.esm.js",
   "module": "dist/components.esm.js",
@@ -38,14 +38,14 @@
     "styled-components": "*"
   },
   "dependencies": {
-    "@emotion/react": "^11.13.3",
-    "@emotion/styled": "^11.13.0",
+    "@emotion/react": "^11.10.5",
+    "@emotion/styled": "^11.10.5",
     "@solana-mobile/wallet-adapter-mobile": "^2.1.3",
     "@solana/wallet-adapter-base": "0.9.23",
     "@solana/wallet-adapter-react": "^0.15.35",
     "@telegram-apps/sdk-react": "^1.1.3",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0",
     "react-use": "^17.5.1"
   },
   "devDependencies": {
