@@ -1,4 +1,8 @@
-import { createTransferCheckedInstruction, getAssociatedTokenAddressSync } from '@solana/spl-token';
+import {
+  createAssociatedTokenAccountIdempotentInstruction,
+  createTransferCheckedInstruction,
+  getAssociatedTokenAddressSync,
+} from '@solana/spl-token';
 import { Connection, PublicKey, SystemProgram } from '@solana/web3.js';
 import { FC, FormEvent, useState } from 'react';
 import tw from 'twin.macro';
@@ -99,6 +103,13 @@ export const WithdrawalPage: FC<{
           true,
           tokenProgram,
         );
+        const ataTx = createAssociatedTokenAccountIdempotentInstruction(
+          publicKey,
+          destination,
+          new PublicKey(recipient),
+          new PublicKey(token.id),
+          tokenProgram,
+        );
         const transferIx = createTransferCheckedInstruction(
           source,
           new PublicKey(token.id),
@@ -109,7 +120,7 @@ export const WithdrawalPage: FC<{
           undefined,
           tokenProgram,
         );
-        tx = await buildAndSignTransaction([transferIx], publicKey, signTransaction, connection);
+        tx = await buildAndSignTransaction([ataTx, transferIx], publicKey, signTransaction, connection);
       }
       console.log('Signed Tx:', tx);
       // show modal
