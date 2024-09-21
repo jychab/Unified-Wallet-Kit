@@ -7,10 +7,10 @@ import { Adapter, WalletReadyState } from '@solana/wallet-adapter-base';
 import { usePrevious } from 'react-use';
 import WalletConnectionProvider, { IUnifiedWalletConfig } from './WalletConnectionProvider';
 
-import { TelegramWalletModalProvider } from 'src/telegram/contexts/TelegramWalletModalProvider';
 import ModalDialog from '../components/ModalDialog';
 import UnifiedWalletModal from '../components/UnifiedWalletModal';
 import { shortenAddress } from '../misc/utils';
+import { TelegramWalletModalProvider } from '../telegram/contexts/TelegramWalletModalProvider';
 import { TelegramWalletProvider } from '../telegram/contexts/TelegramWalletProvider';
 import { TranslationProvider } from './TranslationProvider';
 import {

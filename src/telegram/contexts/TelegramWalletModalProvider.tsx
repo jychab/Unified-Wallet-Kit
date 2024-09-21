@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useEffect, useState } from 'react';
-import ModalDialog from 'src/components/ModalDialog';
-import { IUnifiedWalletConfig } from 'src/contexts/WalletConnectionProvider';
+import ModalDialog from '../../components/ModalDialog';
+import { IUnifiedWalletConfig } from '../../contexts/WalletConnectionProvider';
 import { TelegramOnboardingFlow } from '../ui/TelegramOnboarding';
 import { TelegramWalletModal } from '../ui/TelegramWalletModal';
 import { useTelegramWalletContext } from './TelegramWalletContext';
