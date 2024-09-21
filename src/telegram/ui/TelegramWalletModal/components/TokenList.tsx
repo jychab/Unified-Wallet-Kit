@@ -119,7 +119,7 @@ const Summary: FC<{ total: number; setFlow: (flow: ITelegramWalletFlow) => void 
   const { theme } = useUnifiedWalletContext();
 
   return (
-    <div tw="w-full px-4 py-8 flex flex-col items-center gap-4">
+    <div tw="w-full p-4 flex flex-col items-center gap-4">
       <div tw="text-5xl font-bold text-center">{`$${total.toFixed(2)}`}</div>
       <div tw="flex justify-center gap-2">
         <button
@@ -155,7 +155,6 @@ export const TokenList: FC<{
   const [filtered, setFiltered] = useState<any[]>([]);
   const { publicKey } = useUnifiedWallet();
   const [search, setSearch] = useState('');
-  // Fetch tokens and cache them
 
   useEffect(() => {
     if (!publicKey) return;
@@ -206,7 +205,7 @@ export const TokenList: FC<{
           onChange={(e) => setSearch(e.target.value)}
         />
       )}
-      <div tw="overflow-scroll w-full max-h-[28vh]" className="hideScrollbar">
+      <div tw="overflow-scroll w-full max-h-[35vh]" className="hideScrollbar">
         {filtered
           .sort((a, b) => getTokenPrice(b) - getTokenPrice(a))
           .map((x) => (

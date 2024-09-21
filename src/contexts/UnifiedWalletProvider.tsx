@@ -7,13 +7,11 @@ import { Adapter, WalletReadyState } from '@solana/wallet-adapter-base';
 import { usePrevious } from 'react-use';
 import WalletConnectionProvider, { IUnifiedWalletConfig } from './WalletConnectionProvider';
 
+import { TelegramWalletModalProvider } from 'src/telegram/contexts/TelegramWalletModalProvider';
 import ModalDialog from '../components/ModalDialog';
 import UnifiedWalletModal from '../components/UnifiedWalletModal';
 import { shortenAddress } from '../misc/utils';
-import { useTelegramWalletContext } from '../telegram/contexts/TelegramWalletContext';
 import { TelegramWalletProvider } from '../telegram/contexts/TelegramWalletProvider';
-import { TelegramOnboardingFlow } from '../telegram/ui/TelegramOnboarding';
-import { TelegramWalletModal } from '../telegram/ui/TelegramWalletModal';
 import { TranslationProvider } from './TranslationProvider';
 import {
   UnifiedWalletContext,
@@ -51,8 +49,6 @@ const UnifiedWalletContextProvider: React.FC<
     config: IUnifiedWalletConfig;
   } & PropsWithChildren
 > = ({ config, children }) => {
-  const { setShowWalletModal, showWalletModal, showOnboardingModal, setShowOnboardingModal, setTransactionSimulation } =
-    useTelegramWalletContext();
   const { publicKey, wallet, select, connect } = useUnifiedWallet();
   const previousPublicKey = usePrevious<PublicKey | null>(publicKey);
   const previousWallet = usePrevious<Wallet | null>(wallet);
@@ -158,33 +154,6 @@ const UnifiedWalletContextProvider: React.FC<
     }
   }, [wallet, publicKey, previousWallet]);
 
-  // we use another variable here because we want the exit animation to trigger first before closingt he modal
-  const [showWallet, setShowWallet] = useState(false);
-  const [animateOut, setAnimateOut] = useState(false);
-  useEffect(() => {
-    if (showWalletModal) {
-      setShowWallet(true);
-    } else {
-      onCloseAnimated();
-    }
-  }, [showWalletModal]);
-
-  const onCloseAnimated = () => {
-    setShowWallet(false);
-    setAnimateOut(true);
-  };
-
-  useEffect(() => {
-    if (!showWallet) {
-      const resetAnimation = setTimeout(() => {
-        setTransactionSimulation(undefined);
-        setAnimateOut(false);
-      }, 500);
-
-      return () => clearTimeout(resetAnimation);
-    }
-  }, [showWallet]);
-
   return (
     <UnifiedWalletContext.Provider
       value={{
@@ -202,16 +171,6 @@ const UnifiedWalletContextProvider: React.FC<
       <ModalDialog open={showModal} onClose={() => setShowModal(false)}>
         <UnifiedWalletModal onClose={() => setShowModal(false)} />
       </ModalDialog>
-      {config.telegramConfig && (
-        <ModalDialog open={showWallet} onClose={() => setShowWalletModal(false)}>
-          {showWallet && <TelegramWalletModal onClose={() => setShowWalletModal(false)} animateOut={animateOut} />}
-        </ModalDialog>
-      )}
-      {config.telegramConfig && (
-        <ModalDialog open={showOnboardingModal && !showWallet} onClose={() => setShowOnboardingModal(false)}>
-          <TelegramOnboardingFlow onClose={() => setShowOnboardingModal(false)} />
-        </ModalDialog>
-      )}
       {children}
     </UnifiedWalletContext.Provider>
   );
@@ -231,7 +190,9 @@ const UnifiedWalletProvider = ({
       <TelegramWalletProvider>
         <WalletConnectionProvider config={config} wallets={wallets}>
           <UnifiedWalletValueProvider>
-            <UnifiedWalletContextProvider config={config}>{children}</UnifiedWalletContextProvider>
+            <UnifiedWalletContextProvider config={config}>
+              <TelegramWalletModalProvider config={config}>{children}</TelegramWalletModalProvider>
+            </UnifiedWalletContextProvider>
           </UnifiedWalletValueProvider>
         </WalletConnectionProvider>
       </TelegramWalletProvider>

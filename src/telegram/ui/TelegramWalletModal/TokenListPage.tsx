@@ -19,7 +19,7 @@ export const TokenListPage: FC<{
   const { theme } = useUnifiedWalletContext();
 
   return (
-    <div tw="flex flex-col gap-2 ">
+    <div tw="flex flex-col ">
       <TokenList
         setFlow={setFlow}
         showPrices={false}

@@ -16,7 +16,6 @@ import ChevronUpIcon from '../../icons/ChevronUpIcon';
 import CloseIcon from '../../icons/CloseIcon';
 import { isMobile, useOutsideClick } from '../../misc/utils';
 import { useTelegramWalletContext } from '../../telegram/contexts/TelegramWalletContext';
-import { getInitData } from '../../telegram/helpers';
 import NotInstalled from './NotInstalled';
 import { OnboardingFlow } from './Onboarding';
 
@@ -288,26 +287,11 @@ const sortByPrecedence = (walletPrecedence: WalletName[]) => (a: Adapter, b: Ada
 
 const UnifiedWalletModal: React.FC<IUnifiedWalletModal> = ({ onClose }) => {
   const { wallets } = useUnifiedWallet();
-  const { telegramConfig, walletPrecedence, theme, walletModalAttachments } = useUnifiedWalletContext();
+  const { walletPrecedence, theme, walletModalAttachments } = useUnifiedWalletContext();
   const [isOpen, onToggle] = useToggle(false);
   const previouslyConnected = usePreviouslyConnected();
 
   const list: { highlightedBy: HIGHLIGHTED_BY; highlight: Adapter[]; others: Adapter[] } = useMemo(() => {
-    if (telegramConfig) {
-      try {
-        const initData = getInitData();
-        const telegramWallet = wallets.find((x) => x.adapter.name === telegramConfig.botUsername);
-        if (initData && telegramWallet) {
-          return {
-            highlightedBy: 'TopAndRecommended',
-            highlight: [telegramWallet.adapter],
-            others: [],
-          };
-        }
-      } catch (e) {
-        console.log('Not On Telegram');
-      }
-    }
     // Then, Installed, Top 3, Loadable, NotDetected
     const filteredAdapters = wallets.reduce<{
       previouslyConnected: Adapter[];
@@ -398,7 +382,7 @@ const UnifiedWalletModal: React.FC<IUnifiedWalletModal> = ({ onClose }) => {
       .sort((a, b) => PRIORITISE[a.readyState] - PRIORITISE[b.readyState])
       .sort(sortByPrecedence(walletPrecedence || []));
     return { highlightedBy: 'TopWallet', highlight: top3, others };
-  }, [wallets, previouslyConnected, telegramConfig]);
+  }, [wallets, previouslyConnected]);
 
   const [animateOut, setAnimateOut] = useState(false);
   const onCloseAnimated = () => {

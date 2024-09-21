@@ -62,7 +62,7 @@ export const TelegramWalletModal: React.FC<ITelegramWalletModal> = ({ onClose, a
       id="telegram_wallet_modal"
       ref={contentRef}
       css={[
-        tw`px-4 pt-4 pb-14 w-full flex flex-col rounded-t-xl sm:rounded-xl max-h-[90vh] lg:max-h-[576px] max-w-md items-center justify-center`,
+        tw`px-4 pt-4 pb-10 w-full flex flex-col rounded-t-xl sm:rounded-xl max-h-[90vh] lg:max-h-[576px] max-w-md items-center justify-center`,
         styles.container[theme],
         animateOut ? tw`animate-fade-bottom duration-500` : tw`animate-fade-top duration-500`,
       ]}
